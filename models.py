@@ -1,6 +1,10 @@
 import torch
 import torch.nn as nn
+import dataclasses
 
+@dataclasses.dataclass
+class MLPArgs:
+    hiddens: list = dataclasses.field(default_factory=lambda: [20, 10])
 
 class MLP(nn.Module):
     def __init__(self, input_size, output_size, hiddens=None, activation=None):
@@ -26,6 +30,15 @@ class MLP(nn.Module):
         return self.mlp(x)
     
 
+
+@dataclasses.dataclass
+class LSTMArgs:
+    num_layer: int = 1
+    hidden_size: int = 100
+    dropout: float = 0.2
+    bidirectional: bool = False
+    norm: bool = False
+    activation: str = 'tanh'
 
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, output_size, num_layer=1, dropout=0.2, bidirectional=False, norm=False, activation='tanh'):
@@ -74,7 +87,12 @@ class LSTM(nn.Module):
     
 
 
-
+@dataclasses.dataclass
+class TransformerArgs:
+    d_model: int = 512
+    num_layer: int = 6
+    nheads: int = 8
+    dropout: float = 0.1
 
 
 class PositionalEncoding(nn.Module):
