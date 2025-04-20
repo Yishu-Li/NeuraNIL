@@ -79,3 +79,11 @@ The major "stakeholders" in this problem are the people who lost their ability t
 - Carlos: lead for FALCON data, model implementation and training
 - Jania: lead for written report and poster, model implementation and training
 - Yishu: lead for BrainGate2 data, model implementation and training
+
+
+## Running Environment
+
+Python=3.12
+PyTorch=2.6.0+cu126
+simple-parsing=0.1.7
+wandb=0.19.9
