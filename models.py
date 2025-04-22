@@ -6,28 +6,36 @@ from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence
 @dataclasses.dataclass
 class MLPArgs:
     hiddens: list = dataclasses.field(default_factory=lambda: [20, 10])
+    activation: str = 'relu'
 
 class MLP(nn.Module):
     def __init__(self, input_size, output_size, hiddens=None, activation=None):
         super(MLP, self).__init__()
         
-        # Initialize the model and parameters
-        if activation is None:
-            activation = nn.ReLU()
-        if hidden_size is None:
-            hidden_size = [20, 10]
+        if activation == 'tanh':
+            self.activation = nn.Tanh()
+        elif activation == 'relu':
+            self.activation = nn.ReLU()
+        elif activation == 'sigmoid':
+            self.activation = nn.Sigmoid()
+        elif activation == 'softmax':
+            self.activation = nn.Identity() # NOTE: CE loss in PyTorch applies softmax internally
 
         # Build the MLP model
         mlp = []
         prev_hidden = input_size
         for h in hiddens:
             mlp.append(nn.Linear(prev_hidden, h))
-            mlp.append(activation)
+            mlp.append(nn.ReLU())
             prev_hidden = h
         mlp.append(nn.Linear(prev_hidden, output_size))
+        mlp.append(self.activation)
         self.mlp = nn.Sequential(*mlp)
 
-    def forward(self, x):
+    def forward(self, x, lengths):
+        # Average along the time axis
+        if len(x.shape) == 3:
+            x = torch.mean(x, dim=1)
         return self.mlp(x)
     
 

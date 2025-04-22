@@ -227,7 +227,7 @@ def main():
     # --------------------------------- Testing ----------------------------------
     if len(test_loader.dataset) > 0:
         model.eval()
-        evaluate_model(
+        test_loss,  test_acc = evaluate_model(
             model=model,
             device=device,
             data_loader=test_loader,
@@ -235,6 +235,9 @@ def main():
             stats_prefix="Test",
             run_name=wandb_name,  # Use the wandb name for saving results
         )
+
+        print(f'\n{"*"*35} Test Results {"*"*35}')
+        print(f'Test Loss: {test_loss} | Test Accuracy: {test_acc}')
 
 
 

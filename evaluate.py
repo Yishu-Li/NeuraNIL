@@ -73,7 +73,6 @@ def evaluate_model(model, data_loader, device, loss_fn, stats_prefix="", run_nam
                 all_preds.append(predicted.cpu().numpy())
         avg_loss = total_loss / len(data_loader)
         accuracy = correct / total_samples
-        print(f"{stats_prefix} Loss: {avg_loss:.4f}, Accuracy: {accuracy:.4f}")
 
         # Plot confusion matrix for test set
         if stats_prefix == "Test":

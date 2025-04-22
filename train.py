@@ -40,7 +40,8 @@ def train(model, device, train_loader, valid_loader, opt, loss_fn, run_name, arg
     train_accuracies = []
     valid_accuracies = []
 
-    for epoch in tqdm.trange(args.options.epochs):
+    # for epoch in tqdm.trange(args.options.epochs):
+    for epoch in range(args.options.epochs):
         # Train step
         model.train()
         epoch_loss = 0
@@ -60,7 +61,6 @@ def train(model, device, train_loader, valid_loader, opt, loss_fn, run_name, arg
                 
         epoch_loss /= len(train_loader)
         train_losses.append(epoch_loss)
-        print(f"Epoch {epoch + 1}/{args.options.epochs}, Loss: {epoch_loss:.4f}")
 
         # Training accuracy
         model.eval()
@@ -68,10 +68,12 @@ def train(model, device, train_loader, valid_loader, opt, loss_fn, run_name, arg
         train_accuracies.append(train_accuracy)
 
         # Validation step
-        print(f'\n{"*"*35} Validation {"*"*35}')
         valid_loss, valid_accuracy = evaluate_model(model, valid_loader, device, loss_fn, stats_prefix="Validation")
         valid_losses.append(valid_loss)
         valid_accuracies.append(valid_accuracy)
+
+        # Display training process
+        print(f"\rEpoch {epoch+1}/{args.options.epochs} | Train Loss: {train_loss:.4f} Acc: {train_accuracy:.2f} | Val Loss: {valid_loss:.4f} Acc: {valid_accuracy:.2f}", end="", flush=True)
 
     # Plot training and validation loss and accuracy
     plot_training_curves(
