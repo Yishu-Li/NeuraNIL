@@ -2,6 +2,40 @@ import torch
 import numpy as np
 from utils import compute_confusion_matrix
 
+def plot_confusion_matrix(y_true, y_pred, accuracy, save_path="results/confusion_matrix_test.png"):
+    """
+    Plot and save the normalized confusion matrix with accuracy in the title.
+    """
+    import matplotlib.pyplot as plt
+    import os
+
+    num_classes = max(y_true.max(), y_pred.max()) + 1
+    cm = compute_confusion_matrix(y_true, y_pred, num_classes=num_classes)
+    cm = cm.T
+    # Normalize by true label count (per column)
+    true_label_counts = cm.sum(axis=0, keepdims=True)
+    cm_norm = cm / (true_label_counts + 1e-8)
+    plt.figure(figsize=(8, 8))
+    plt.imshow(cm_norm, interpolation='nearest', cmap="Blues", vmin=0, vmax=1)
+    plt.title(f"Confusion Matrix (Test Set)\nAccuracy: {accuracy:.4f}")
+    plt.colorbar()
+    tick_marks = np.arange(num_classes)
+    plt.xticks(tick_marks)
+    plt.yticks(tick_marks)
+    plt.xlabel("True label")
+    plt.ylabel("Predicted label")
+    # Show values in cells (with 2 decimals)
+    thresh = 0.5
+    for i in range(num_classes):
+        for j in range(num_classes):
+            plt.text(j, i, f"{cm_norm[i, j]:.2f}",
+                     ha="center", va="center",
+                     color="white" if cm_norm[i, j] > thresh else "black")
+    plt.tight_layout()
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    plt.savefig(save_path)
+    plt.close()
+
 def evaluate_model(model, data_loader, device, loss_fn, stats_prefix=""):
     """
     Evaluate the model on the given data loader.
@@ -43,34 +77,7 @@ def evaluate_model(model, data_loader, device, loss_fn, stats_prefix=""):
 
         # Plot confusion matrix for test set
         if stats_prefix == "Test":
-            import matplotlib.pyplot as plt
             y_true = np.concatenate(all_labels)
             y_pred = np.concatenate(all_preds)
-            num_classes = max(y_true.max(), y_pred.max()) + 1
-            cm = compute_confusion_matrix(y_true, y_pred, num_classes=num_classes)
-            cm = cm.T
-            # Normalize by true label count (per column)
-            true_label_counts = cm.sum(axis=0, keepdims=True)
-            cm_norm = cm / (true_label_counts + 1e-8)
-            plt.figure(figsize=(8, 8))
-            plt.imshow(cm_norm, interpolation='nearest', cmap="Blues", vmin=0, vmax=1)
-            plt.title("Confusion Matrix (Test Set)")
-            plt.colorbar()
-            tick_marks = np.arange(num_classes)
-            plt.xticks(tick_marks)
-            plt.yticks(tick_marks)
-            plt.xlabel("True label")
-            plt.ylabel("Predicted label")
-            # Show values in cells (with 2 decimals)
-            thresh = 0.5
-            for i in range(num_classes):
-                for j in range(num_classes):
-                    plt.text(j, i, f"{cm_norm[i, j]:.2f}",
-                             ha="center", va="center",
-                             color="white" if cm_norm[i, j] > thresh else "black")
-            plt.tight_layout()
-            import os
-            os.makedirs("results", exist_ok=True)
-            plt.savefig("results/confusion_matrix_test.png")
-            plt.close()
+            plot_confusion_matrix(y_true, y_pred, accuracy)
         return avg_loss, accuracy

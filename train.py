@@ -5,6 +5,31 @@ import matplotlib.pyplot as plt
 
 from evaluate import evaluate_model
 
+def plot_training_curves(train_losses, valid_losses, train_accuracies, valid_accuracies, epochs, save_path="results/train_valid_loss.png"):
+    """
+    Plot training and validation loss and accuracy curves.
+    """
+    plt.figure(figsize=(12, 6))
+    plt.subplot(1, 2, 1)
+    plt.plot(range(1, epochs + 1), train_losses, label='Training Loss')
+    plt.plot(range(1, epochs + 1), valid_losses, label='Validation Loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.title('Training and Validation Loss')
+    plt.legend()
+
+    plt.subplot(1, 2, 2)
+    plt.plot(range(1, epochs + 1), train_accuracies, label='Training Accuracy')
+    plt.plot(range(1, epochs + 1), valid_accuracies, label='Validation Accuracy')
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
+    plt.title('Training and Validation Accuracy')
+    plt.legend()
+
+    plt.tight_layout()
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    plt.savefig(save_path)
+
 def train(model, device, train_loader, valid_loader, opt, loss_fn, args):
     """
     Train the model.
@@ -47,25 +72,7 @@ def train(model, device, train_loader, valid_loader, opt, loss_fn, args):
         valid_losses.append(valid_loss)
         valid_accuracies.append(valid_accuracy)
 
-    # Plot training and validation loss
-    plt.figure(figsize=(12, 6))
-    plt.subplot(1, 2, 1)
-    plt.plot(range(1, args.options.epochs + 1), train_losses, label='Training Loss')
-    plt.plot(range(1, args.options.epochs + 1), valid_losses, label='Validation Loss')
-    plt.xlabel('Epochs')
-    plt.ylabel('Loss')
-    plt.title('Training and Validation Loss')
-    plt.legend()
-
-    # Plot training and validation accuracy
-    plt.subplot(1, 2, 2)
-    plt.plot(range(1, args.options.epochs + 1), train_accuracies, label='Training Accuracy')
-    plt.plot(range(1, args.options.epochs + 1), valid_accuracies, label='Validation Accuracy')
-    plt.xlabel('Epochs')
-    plt.ylabel('Accuracy')
-    plt.title('Training and Validation Accuracy')
-    plt.legend()
-
-    plt.tight_layout()
-    os.makedirs("results", exist_ok=True)
-    plt.savefig("results/train_valid_loss.png")
+    # Plot training and validation loss and accuracy
+    plot_training_curves(
+        train_losses, valid_losses, train_accuracies, valid_accuracies, args.options.epochs
+    )
