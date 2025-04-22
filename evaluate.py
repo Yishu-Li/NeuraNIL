@@ -2,7 +2,7 @@ import torch
 import numpy as np
 from utils import compute_confusion_matrix
 
-def plot_confusion_matrix(y_true, y_pred, accuracy, save_path="results/confusion_matrix_test.png"):
+def plot_confusion_matrix(y_true, y_pred, accuracy, run_name=""):
     """
     Plot and save the normalized confusion matrix with accuracy in the title.
     """
@@ -32,11 +32,11 @@ def plot_confusion_matrix(y_true, y_pred, accuracy, save_path="results/confusion
                      ha="center", va="center",
                      color="white" if cm_norm[i, j] > thresh else "black")
     plt.tight_layout()
-    os.makedirs(os.path.dirname(save_path), exist_ok=True)
-    plt.savefig(save_path)
+    os.makedirs(os.path.dirname(f'results/{run_name}/'), exist_ok=True)
+    plt.savefig(f'results/{run_name}/confusion_matrix.png')
     plt.close()
 
-def evaluate_model(model, data_loader, device, loss_fn, stats_prefix=""):
+def evaluate_model(model, data_loader, device, loss_fn, stats_prefix="", run_name=""):
     """
     Evaluate the model on the given data loader.
     """
@@ -79,5 +79,5 @@ def evaluate_model(model, data_loader, device, loss_fn, stats_prefix=""):
         if stats_prefix == "Test":
             y_true = np.concatenate(all_labels)
             y_pred = np.concatenate(all_preds)
-            plot_confusion_matrix(y_true, y_pred, accuracy)
+            plot_confusion_matrix(y_true, y_pred, accuracy, run_name=run_name)
         return avg_loss, accuracy

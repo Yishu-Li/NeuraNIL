@@ -120,6 +120,13 @@ def main():
     else:
         model_details = ''
 
+    if args.dataset.random_split:
+        model_details += f'_random_split_{args.dataset.split_ratio}'
+    if args.dataset.labels_exclude:
+        model_details += f'_labels_exclude_{"_".join(args.dataset.labels_exclude)}'
+    if args.dataset.days_exclude:
+        model_details += f'_days_exclude_{"_".join(args.dataset.days_exclude)}'
+
     wandb_name = f"{data_tag}_{args.options.model}_{model_details}"
 
     # wandb.init(
@@ -212,7 +219,8 @@ def main():
             valid_loader=valid_loader,
             opt=opt,
             loss_fn=loss_fn,
-            args=args
+            args=args,
+            run_name=wandb_name,  # Use the wandb name for saving results
         )
 
 
@@ -225,6 +233,7 @@ def main():
             data_loader=test_loader,
             loss_fn=loss_fn,
             stats_prefix="Test",
+            run_name=wandb_name,  # Use the wandb name for saving results
         )
 
 

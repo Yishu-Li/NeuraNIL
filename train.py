@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 from evaluate import evaluate_model
 
-def plot_training_curves(train_losses, valid_losses, train_accuracies, valid_accuracies, epochs, save_path="results/train_valid_loss.png"):
+def plot_training_curves(train_losses, valid_losses, train_accuracies, valid_accuracies, epochs, run_name=""):
     """
     Plot training and validation loss and accuracy curves.
     """
@@ -27,10 +27,11 @@ def plot_training_curves(train_losses, valid_losses, train_accuracies, valid_acc
     plt.legend()
 
     plt.tight_layout()
-    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    save_path = f'results/{run_name}/training_curves.png'
+    os.makedirs(os.path.dirname(f'results/{run_name}/'), exist_ok=True)
     plt.savefig(save_path)
 
-def train(model, device, train_loader, valid_loader, opt, loss_fn, args):
+def train(model, device, train_loader, valid_loader, opt, loss_fn, run_name, args):
     """
     Train the model.
     """
@@ -42,10 +43,10 @@ def train(model, device, train_loader, valid_loader, opt, loss_fn, args):
     for epoch in tqdm.trange(args.options.epochs):
         # Train step
         model.train()
-        opt.zero_grad()
         epoch_loss = 0
 
         for batch in train_loader:
+            opt.zero_grad()
             if hasattr(model, 'learner'):
                 raise NotImplementedError("NeuraNIL training not implemented yet.")
             else:
@@ -74,5 +75,5 @@ def train(model, device, train_loader, valid_loader, opt, loss_fn, args):
 
     # Plot training and validation loss and accuracy
     plot_training_curves(
-        train_losses, valid_losses, train_accuracies, valid_accuracies, args.options.epochs
+        train_losses, valid_losses, train_accuracies, valid_accuracies, args.options.epochs, run_name=run_name
     )
