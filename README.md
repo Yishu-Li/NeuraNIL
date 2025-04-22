@@ -22,21 +22,21 @@ In this project, we adapt a method from an existing paper, [Raghu et al. (2019)]
 In 2017, [Finn et al.](https://arxiv.org/pdf/1703.03400) proposed a model agnostic meta-learning method (**MAML**) to train a model that can solve different tasks than those it trained on. They achieved this and made the models easy to generalize with only a small number of gradient steps and training data needed to solve the new tasks. This method is compatible with any model trained with gradient descent.  
 The training process is divided to two types of parameter updates: *the outer loop* and *inner loop*. The outer loop updates the meta-initialization of the neural network parameters to a setting that enables fast adaptation to new tasks. The inner loop takes the outer loop initialization and performs task-specific adaptation over a few labeled samples.
 In 2019, [Raghu et al.](https://arxiv.org/pdf/1909.09157) conjectured that we can obtain the same rapid learning performance of MAML solely through feature reuse by only update the last layer of the model during the inner loop. To test this hypothesis, they introduced **ANIL** (almost no inner loop), a simplified algorithm of MAML that is equally effective but computationally faster. The figures below clarify the difference between the MAML and ANIL methods. 
-![Rapid learning and feature reuse](image-1.png)
-![MAML and ANIL algorithms](image.png)
+![Rapid learning and feature reuse](images\image-1.png)
+![MAML and ANIL algorithms](images\image.png)
 
 2. **Deep learning, non-linearity, and neural decoding:**  
 Linear decoders such as the [Kalman filter](https://web.mit.edu/kirtley/kirtley/binlustuff/literature/control/Kalman%20filter.pdf) have been widely used for neural decoding to enable individuals with paralysis to control computer mouses. However, more work is needed to improve this. Previous research shows that deep learning methods such as multi-layer perceptrons and recurrent neural networks can provide higher performance for the task by inducing non-linearity into the decoders. The problem with deep learning is that training models requires a lot more data than simple non-linear decoders. Deep learning models are harder to tune and adapt to new data.
 
 3. **Neural non-stationary and manifold-based iBCI decoders:**  
 Previous research has shown the non-stationary of neural signals---models trained on signals from previous days may suffer from performance degradation or even break after several days or weeks. Many methods have been proposed to address this problem, such as manifold-based decoders. These begin by mapping the neural data to a lower dimensional latent space. Then, the latent space neural data is aligned to the initial distribution where the decoder was first trained, eliminating the non-stationary and maintaining the decoder performance across days. This method is shown in the figure below.  
-![An illustration of manifold-based iBCI decoder](image-2.png)
+![An illustration of manifold-based iBCI decoder](images\image-2.png)
 
 ## Data
 
 1. **FALCON dataset:** The 5 [FALCON](https://www.biorxiv.org/content/10.1101/2024.09.15.613126v1.full.pdf) datasets include neural data recorded form humans, non-human primates and birds. The H2 dataset is a classification task where a human participant imagining writing. The decoder will need to decode the character the participant is trying to write. The dataset is divided three parts: Held-in, Held-out, and and Minival. The Held-in and Minival set are from the training period where the model should be trained and validated and the Held-out set is from the first several blocks in each day from testing period where the model can be fast recelebrated for that day. The figures below are from the FALCON paper and help to visually understand the structure of the datasets. 
-![FALCON](image-3.png)
-![FALCON datasets](image-4.png) 
+![FALCON](images\image-3.png)
+![FALCON datasets](images\image-4.png) 
 
 2. **BrainGate2 clinical trial data:** The BrainGate2 clinical trial data we are going to use is from a ongoing clinical trial where a BrainGate2 participant with advanced ALS trying to communicate by imagining a set of gestures. The raw signal was recorded as 30000 Hz voltage data, then preprocessing including re-reference, filtering, threshold crossing, and power calculation will be calculated to get binned spiking rate and spiking power features.
 
@@ -54,7 +54,7 @@ The model will be consist of two parts: outer loop (learner) and inner loop (cla
 ### Training
 
 As mentioned before, each episode of the data will be divided into a support set and a query set. When training, the learner will first perform the forward pass for support set to get the support set latent space data points, and use the support set latent space data points and support set labels to fit the classifier. Then, the forward pass will be performed on query set through both the learner and the fitted classifier to calculate a loss, which will be used to update the parameters in the learner. After the training, we will fix the learner, and refit the classifier on each new days or new tasks. Pseudocode for this approach is shown below. 
-![NeuraNIL pseudo code](image-5.png)
+![NeuraNIL pseudo code](images\image-5.png)
 
 ## Metrics
 
@@ -83,7 +83,9 @@ The major "stakeholders" in this problem are the people who lost their ability t
 
 ## Running Environment
 
-Python=3.12
-PyTorch=2.6.0+cu126
-simple-parsing=0.1.7
-wandb=0.19.9
+Python=3.12  
+PyTorch=2.6.0+cu126  
+simple-parsing=0.1.7  
+wandb=0.19.9  
+tqdm=4.67.1  
+matplotlib=3.10.1  

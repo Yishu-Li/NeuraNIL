@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import dataclasses
+from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence
 
 @dataclasses.dataclass
 class MLPArgs:
@@ -34,17 +35,19 @@ class MLP(nn.Module):
 @dataclasses.dataclass
 class LSTMArgs:
     num_layer: int = 1
-    hidden_size: int = 100
+    hidden_size: int = 32
     dropout: float = 0.2
     bidirectional: bool = False
     norm: bool = False
     activation: str = 'tanh'
+    pad: bool = True
 
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, output_size, num_layer=1, dropout=0.2, bidirectional=False, norm=False, activation='tanh'):
         super(LSTM, self).__init__()
         self.input_size = input_size
         self.output_size = output_size
+        self.norm = norm
 
         # LSTM block
         self.lstm = nn.LSTM(
@@ -69,15 +72,23 @@ class LSTM(nn.Module):
             self.activation = nn.ReLU()
         elif activation == 'sigmoid':
             self.activation = nn.Sigmoid()
+        elif activation == 'softmax':
+            self.activation = nn.Identity() # NOTE: CE loss in PyTorch applies softmax internally
         else:
             raise ValueError("Unsupported activation function. Use 'tanh', 'relu', or 'sigmoid'.")
         
-    def forward(self, x):
+    def forward(self, x, lengths):
+        # Pack the sequence for LSTM if needed
+        if lengths is not None:
+            x = pack_padded_sequence(x, lengths, batch_first=True, enforce_sorted=False)
+
         # x shape: (batch_size, seq_len, input_size)
         lstm_out, (h_n, c_n) = self.lstm(x) # The output of the LSTM and the hidden states, we only need the last hidden state
 
         if self.norm:
             out = self.norm(h_n[-1]) # h_n shape: (num_layers * num_directions, batch_size, hidden_size)
+        else:
+            out = h_n[-1]
         
         # Final output layer
         out = self.output_layer(out) # [batch_size, output_size]
@@ -95,26 +106,7 @@ class TransformerArgs:
     dropout: float = 0.1
 
 
-class PositionalEncoding(nn.Module):
-    def __init__(self, d_model, dropout=0.1, max_len=5000):
-        super(PositionalEncoding, self).__init__()
-        self.dropout = nn.Dropout(p=dropout)
-
-        pe = torch.zeros(max_len, d_model)
-        position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0, d_model, 2).float() * -(torch.log(torch.tensor(10000.0)) / d_model))
-        pe[:, 0::2] = torch.sin(position * div_term)
-        pe[:, 1::2] = torch.cos(position * div_term)
-        pe = pe.unsqueeze(0).transpose(0, 1)
-
-        self.register_buffer('pe', pe)
-
-    def forward(self, x):
-        x = x + self.pe[:x.size(0), :]
-        return self.dropout(x)
-
-
-
+# Positional encoding class implemented in utils.py
 class transformer(nn.Module):
     def __init__(self, input_size, d_model, output_size, num_layer, nheads, dropout):
         super(transformer, self).__init__()

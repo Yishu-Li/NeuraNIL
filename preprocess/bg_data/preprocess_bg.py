@@ -7,7 +7,6 @@ MAPPING_ALL = ['Fist', 'No', 'C', 'Sign8', 'LThumb', 'DO_NOTHING']
 import os
 from pathlib import Path
 import numpy as np
-import scipy
 from bg_utils import formatSessionData
 
 def main():

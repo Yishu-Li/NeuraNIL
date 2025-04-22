@@ -3,3 +3,6 @@ Data/
 
 # Ignore the pycache folders
 __pycache__/
+
+# Ignore the results folder
+results/
