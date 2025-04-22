@@ -20,11 +20,7 @@ def evaluate_model(model, data_loader, device, loss_fn, stats_prefix=""):
                 raise NotImplementedError("NeuraNIL evaluation not implemented yet.")
             else:
                 data, labels, day_labels, lengths = batch
-                if lengths is not None:
-                    data, labels, day_labels, lengths = data.to(device), labels.to(device), day_labels.to(device), lengths.to(device)
-                else:
-                    data, labels, day_labels = data.to(device), labels.to(device), day_labels.to(device)
-                    lengths = None
+                data, labels, day_labels = data.to(device), labels.to(device), day_labels.to(device)
                 
                 # Forward pass
                 y_pred = model(data, lengths)

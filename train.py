@@ -25,11 +25,7 @@ def train(model, device, train_loader, valid_loader, opt, loss_fn, args):
                 raise NotImplementedError("NeuraNIL training not implemented yet.")
             else:
                 data, labels, day_labels, lengths = batch
-                if lengths is not None:
-                    data, labels, day_labels, lengths = data.to(device), labels.to(device), day_labels.to(device), lengths.to(device)
-                else:
-                    data, labels, day_labels = data.to(device), labels.to(device), day_labels.to(device)
-                    lengths = None
+                data, labels, day_labels = data.to(device), labels.to(device), day_labels.to(device)
                 y_pred = model(data, lengths)
                 batch_loss = loss_fn(y_pred, labels)
                 batch_loss.backward()
