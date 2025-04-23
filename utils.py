@@ -1,7 +1,9 @@
+import os
 import torch
 import torch.nn as nn
 from torch.nn.utils.rnn import pad_sequence
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 class PositionalEncoding(nn.Module):
@@ -70,3 +72,27 @@ def parse_exclude_list(exclude):
         items = exclude[0].strip('[]').split(',')
         return [int(x) for x in items if x.strip() != '']
     return [int(x) for x in exclude]
+
+
+
+def plot_lda(X_lda, y, run_name="", if_test=False):
+    """
+    Plot the LDA transformed data.
+    """
+    plt.figure(figsize=(8, 6))
+    scatter = plt.scatter(X_lda[:, 0], X_lda[:, 1], c=y, cmap='viridis', edgecolor='k', s=50)
+    plt.title('LDA Projection')
+    plt.xlabel('LDA Component 1')
+    plt.ylabel('LDA Component 2')
+    plt.colorbar(scatter, label='Class Label')
+    
+    if if_test:
+        save_path = f'results/{run_name}/lda_projection_test.png'
+    else:
+        save_path = f'results/{run_name}/lda_projection.png'
+        
+    if run_name != "":
+        os.makedirs(os.path.dirname(f'results/{run_name}/'), exist_ok=True)
+        plt.savefig(save_path)
+    else:
+        plt.show()

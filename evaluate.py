@@ -1,6 +1,8 @@
 import torch
 import numpy as np
-from utils import compute_confusion_matrix
+from utils import compute_confusion_matrix, plot_lda
+
+import models
 
 def plot_confusion_matrix(y_true, y_pred, accuracy, run_name=""):
     """
@@ -40,6 +42,37 @@ def evaluate_model(model, data_loader, device, loss_fn, stats_prefix="", run_nam
     """
     Evaluate the model on the given data loader.
     """
+
+    if isinstance(model, models.LDA) or isinstance(model, models.GNB):
+        all_data = []
+        all_labels = []
+        for data, labels, _, _ in data_loader:
+            all_data.append(data)
+            all_labels.append(labels)
+        all_data = torch.cat(all_data, dim=0)
+        all_labels = torch.cat(all_labels, dim=0)
+
+        # Predict
+        y_pred = model(all_data)
+
+        # Calculate the loss and accuracy
+        predicted = y_pred
+        correct = (predicted == all_labels).sum().item()
+        total_samples = all_labels.size(0)
+        accuracy = correct / total_samples
+
+        # Plot confusion matrix for test set
+        if stats_prefix == "Test":
+            y_true = all_labels.cpu().numpy()
+            y_pred = predicted.cpu().numpy()
+            plot_confusion_matrix(y_true, y_pred, accuracy, run_name=run_name)
+
+            # Plot the LDA
+            if isinstance(model, models.LDA):
+                X_lda = model.transform(all_data)
+                plot_lda(X_lda.numpy(), all_labels.numpy(), run_name=run_name, if_test=True)
+        return None, accuracy
+
     
     all_labels = []
     all_preds = []

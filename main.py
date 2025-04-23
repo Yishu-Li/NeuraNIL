@@ -34,6 +34,7 @@ def setup_model(args, input_size, output_size):
             output_size=output_size,
             hiddens=args.mlp.hiddens,
             activation=args.mlp.activation,
+            dropout=args.mlp.dropout,
         )
     elif args.options.model == "Transformer":
         model = models.Transformer(
@@ -44,6 +45,12 @@ def setup_model(args, input_size, output_size):
             d_model=args.transformer.d_model,
             dropout=args.transformer.dropout,
         )
+    elif args.options.model == "LDA":
+        model = models.LDA(
+            n_components=args.lda.n_components,
+        )
+    elif args.options.model == "GNB":
+        model = models.GNB()
     elif args.options.model == "NeuraNIL":
         # TODO: Implement NeuraNIL model
         raise NotImplementedError("NeuraNIL model is not implemented yet.")
@@ -92,6 +99,7 @@ def main():
     parser.add_arguments(models.MLPArgs, dest="mlp")
     parser.add_arguments(models.LSTMArgs, dest="lstm")
     parser.add_arguments(models.TransformerArgs, dest="transformer")
+    parser.add_arguments(models.LDAArgs, dest="lda")
     args = parser.parse_args()
 
 
@@ -206,8 +214,12 @@ def main():
 
 
     # --------------------------------- Training ----------------------------------
-    opt = torch.optim.Adam(model.parameters(), lr=0.001)
-    loss_fn = torch.nn.CrossEntropyLoss()
+    if isinstance(model, models.LDA) or isinstance(model, models.GNB):
+        opt = None  # ML methods does not require an optimizer
+        loss_fn = None  # ML methods does not require a loss function
+    else:
+        opt = torch.optim.Adam(model.parameters(), lr=0.001)
+        loss_fn = torch.nn.CrossEntropyLoss()
 
     if not skip_training:
         from train import train

@@ -4,6 +4,8 @@ import tqdm
 import matplotlib.pyplot as plt
 
 from evaluate import evaluate_model
+import models
+from utils import plot_lda
 
 def plot_training_curves(train_losses, valid_losses, train_accuracies, valid_accuracies, epochs, run_name=""):
     """
@@ -31,10 +33,46 @@ def plot_training_curves(train_losses, valid_losses, train_accuracies, valid_acc
     os.makedirs(os.path.dirname(f'results/{run_name}/'), exist_ok=True)
     plt.savefig(save_path)
 
+
+
 def train(model, device, train_loader, valid_loader, opt, loss_fn, run_name, args):
     """
     Train the model.
     """
+
+    if isinstance(model, models.LDA) or isinstance(model, models.GNB):
+        # Get all the data and labels from the data_loader
+        all_data = []
+        all_labels = []
+        for data, labels, _, _ in train_loader:
+            all_data.append(data)
+            all_labels.append(labels)
+        for data, labels, _, _ in valid_loader:
+            all_data.append(data)
+            all_labels.append(labels)
+        all_data = torch.cat(all_data, dim=0)
+        all_labels = torch.cat(all_labels, dim=0)
+        print(f'Train data shape: {all_data.shape}')
+        print(f'Train labels shape: {all_labels.shape}')
+
+        if isinstance(model, models.LDA):
+            # Fit the LDA model
+            X_lda = model.fit_transform(all_data, all_labels)
+            print("LDA model fitted on the training data.")
+            plot_lda(X_lda.numpy(), all_labels.numpy(), run_name=run_name)
+        else:
+            # Fit the GNB model
+            model.fit(all_data, all_labels)
+            print("GNB model fitted on the training data.")
+
+        # Calculate the training loss and accuracy
+        model.eval()
+        train_loss, train_accuracies = evaluate_model(model, train_loader, device, loss_fn, stats_prefix="Train", run_name=run_name)
+        print(f"Training Accuracy: {train_accuracies:.2f}")
+        return
+
+
+
     train_losses = []
     valid_losses = []
     train_accuracies = []
