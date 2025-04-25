@@ -27,6 +27,8 @@ def setup_model(args, input_size, output_size):
             bidirectional=args.lstm.bidirectional,
             norm=args.lstm.norm,
             activation=args.lstm.activation,
+            ifconv=args.lstm.ifconv,
+            convoutput=args.lstm.convoutput,
         )
     elif args.options.model == "MLP":
         model = models.MLP(

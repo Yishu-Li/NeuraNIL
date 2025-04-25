@@ -3,6 +3,7 @@
 
 # Default LSTM
 python main.py --epochs=100 --dataset.data="BG" --dataset.random_split=True --days_exclude='[0, 2, 3, 4, 5, 6, 7, 8, 9]' --lstm.pad=False --lstm.activation='softmax' --lstm.norm=True
+python main.py --epochs=100 --dataset.data="BG" --dataset.random_split=True --days_exclude='[0, 2, 3, 4, 5, 6, 7, 8, 9]' --lstm.pad=False --lstm.activation='softmax' --lstm.norm=True --lstm.ifconv=True --lstm.num_layer=1 # Best Proformance
 
 
 # MLP

@@ -52,21 +52,36 @@ class LSTMArgs:
     norm: bool = False
     activation: str = 'tanh'
     pad: bool = True
+    ifconv: bool = False
+    convoutput: int = 1
 
 class LSTM(nn.Module):
-    def __init__(self, input_size, hidden_size, output_size, num_layer=1, dropout=0.2, bidirectional=False, norm=False, activation='tanh'):
+    def __init__(self, input_size, hidden_size, output_size, ifconv=False, convoutput=1, num_layer=1, dropout=0.2, bidirectional=False, norm=False, activation='tanh'):
         super(LSTM, self).__init__()
         self.input_size = input_size
         self.output_size = output_size
         self.norm = norm
+        self.ifconv = ifconv
 
         if norm:
             self.norm = nn.BatchNorm1d(input_size, affine=False)
             # self.norm = nn.LayerNorm(input_size, elementwise_affine=False) # LayerNorm is more suitable for RNNs
 
+        # Conv1d layer
+        if ifconv:
+            self.conv = nn.Conv1d(
+                in_channels=input_size,
+                out_channels=input_size*convoutput,  # 3x input channels for LSTM input (input, hidden, cell)
+                kernel_size=20,
+                stride=10,
+                padding=0,
+            )
+        else:
+            convoutput = 1
+
         # LSTM block
         self.lstm = nn.LSTM(
-            input_size=input_size,
+            input_size=input_size*convoutput,
             hidden_size=hidden_size,
             num_layers=num_layer,
             dropout=dropout,
@@ -101,6 +116,12 @@ class LSTM(nn.Module):
             x = self.norm(x)
             x = x.view(batch_size, seq_len, self.input_size)  
 
+        # Apply convolution to the input
+        if self.ifconv:
+            x = x.permute(0, 2, 1)  # Change shape to (batch_size, input_size, seq_len) for Conv1d
+            x = self.conv(x)  # Apply convolution
+            x = x.permute(0, 2, 1)  # Change back to (batch_size, seq_len, input_size)
+
         # x shape: (batch_size, seq_len, input_size)
         lstm_out, (h_n, c_n) = self.lstm(x) # The output of the LSTM and the hidden states, we only need the last hidden state
 
@@ -130,9 +151,33 @@ class transformer(nn.Module):
         super(transformer, self).__init__()
         self.input_size = input_size
         self.output_size = output_size
+        self.d_model = d_model
+        self.num_layer = num_layer
+        self.nheads = nheads
+        self.dropout = dropout
 
         # Transformer block
         # HACK: 20250409, Do we need the transformer decoder here? Haven't finished.
+        self.norm = nn.BatchNorm1d(input_size, affine=False)
+        from utils import PositionalEncoding
+        self.positional_encoding = PositionalEncoding(d_model, dropout=dropout)
+        self.encoder = nn.TransformerEncoder(
+            nn.TransformerEncoderLayer(
+                d_model=d_model,
+                nhead=nheads,
+                dropout=dropout,
+                activation='relu',
+                batch_first=True,
+                norm_first=True,
+            ),
+            num_layers=num_layer,
+        )
+        self.decoder = nn.Linear(d_model, output_size)
+        self.mask = None
+
+    # def forward(self, x, lengths):
+    #     self.mask = 
+
 
 
 @dataclasses.dataclass
