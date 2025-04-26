@@ -7,6 +7,7 @@ import random
 # import wandb
 
 import models
+from NeuraNIL import NeuraNIL
 import dataset
 from evaluate import evaluate_model
 from utils import collate_fn_lstm, parse_exclude_list
@@ -54,8 +55,22 @@ def setup_model(args, input_size, output_size):
     elif args.options.model == "GNB":
         model = models.GNB()
     elif args.options.model == "NeuraNIL":
-        # TODO: Implement NeuraNIL model
-        raise NotImplementedError("NeuraNIL model is not implemented yet.")
+        # Setup the learner and classifier
+        args.options.model = args.meta.learner
+        learner = setup_model(args, input_size, args.meta.hidden_size)
+        args.options.model = args.meta.classifier
+        classifier = setup_model(args, args.meta.hidden_size, output_size)
+
+        # Setup the NeuraNIL model
+        model = NeuraNIL(
+            learner=learner,
+            classifier=classifier,
+            k=args.meta.k,
+            inner_lr=args.meta.inner_lr,
+        )
+
+        # Set the arg back
+        args.options.model = "NeuraNIL"
     else:
         raise ValueError(f"Unknown model type: {args.options.model}")
     
@@ -77,20 +92,20 @@ def main():
     @dataclasses.dataclass
     class TrainArgs:
         model: str = "LSTM"
-        model_learner: str = "LSTM"
-        model_classifier: str = "MLP"
         epochs: int = 50
         cuda: bool = True
         seed: int = 42
-        project: str = "NeuraNIL"
         model_path: str = None
-
+        lr: float = 0.001
 
     @dataclasses.dataclass
     class MetaArgs:
-        n_shots: int = 10
-        n_queries: int = 10
+        support_ratio: float = 0.5
         hidden_size: int = 8
+        learner: str = "LSTM"
+        classifier: str = "MLP"
+        k: int = 5
+        inner_lr: float = 0.001
 
 
     # Create the args
@@ -125,8 +140,8 @@ def main():
         data_tag = "FALCON"
 
     if args.options.model == "NeuraNIL":
-        model_details = f'{args.options.model_learner}_{args.options.model_classifier}_{args.meta.hidden_size}dims'
-        model_details += f'_{args.meta.n_shots}shots_{args.meta.n_queries}queries'
+        model_details = f'{args.meta.learner}_{args.meta.classifier}_{args.meta.hidden_size}dims'
+        # model_details += f'_{args.meta.n_shots}shots_{args.meta.n_queries}queries'
     else:
         model_details = ''
 
@@ -216,13 +231,6 @@ def main():
 
 
     # --------------------------------- Training ----------------------------------
-    if isinstance(model, models.LDA) or isinstance(model, models.GNB):
-        opt = None  # ML methods does not require an optimizer
-        loss_fn = None  # ML methods does not require a loss function
-    else:
-        opt = torch.optim.Adam(model.parameters(), lr=0.001)
-        loss_fn = torch.nn.CrossEntropyLoss()
-
     if not skip_training:
         from train import train
         # Train the model
@@ -231,8 +239,6 @@ def main():
             device=device,
             train_loader=train_loader,
             valid_loader=valid_loader,
-            opt=opt,
-            loss_fn=loss_fn,
             args=args,
             run_name=wandb_name,  # Use the wandb name for saving results
         )
@@ -240,12 +246,12 @@ def main():
 
     # --------------------------------- Testing ----------------------------------
     if len(test_loader.dataset) > 0:
-        model.eval()
+        # model.eval() # NOTE: Interferes with the meta-learning inner loop update
         test_loss,  test_acc = evaluate_model(
+            args=args,
             model=model,
             device=device,
             data_loader=test_loader,
-            loss_fn=loss_fn,
             stats_prefix="Test",
             run_name=wandb_name,  # Use the wandb name for saving results
         )

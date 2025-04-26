@@ -1,11 +1,11 @@
 import os
 import torch
-import tqdm
+import torch.nn as nn
 import matplotlib.pyplot as plt
 
 from evaluate import evaluate_model
 import models
-from utils import plot_lda
+import utils
 
 def plot_training_curves(train_losses, valid_losses, train_accuracies, valid_accuracies, epochs, run_name=""):
     """
@@ -35,7 +35,7 @@ def plot_training_curves(train_losses, valid_losses, train_accuracies, valid_acc
 
 
 
-def train(model, device, train_loader, valid_loader, opt, loss_fn, run_name, args):
+def train(model, device, train_loader, valid_loader, run_name, args):
     """
     Train the model.
     """
@@ -59,7 +59,7 @@ def train(model, device, train_loader, valid_loader, opt, loss_fn, run_name, arg
             # Fit the LDA model
             X_lda = model.fit_transform(all_data, all_labels)
             print("LDA model fitted on the training data.")
-            plot_lda(X_lda.numpy(), all_labels.numpy(), run_name=run_name)
+            utils.plot_lda(X_lda.numpy(), all_labels.numpy(), run_name=run_name)
         else:
             # Fit the GNB model
             model.fit(all_data, all_labels)
@@ -78,6 +78,19 @@ def train(model, device, train_loader, valid_loader, opt, loss_fn, run_name, arg
     train_accuracies = []
     valid_accuracies = []
 
+    # Initialize the optimizer
+    if hasattr(model, 'learner'):
+        opt = torch.optim.Adam(
+            list(model.learner.parameters()),
+            lr=args.options.lr
+        )
+    else: 
+        opt = torch.optim.Adam(model.parameters(), lr=args.options.lr)
+
+    # Loss function
+    loss_fn = nn.CrossEntropyLoss() 
+
+
     # for epoch in tqdm.trange(args.options.epochs):
     for epoch in range(args.options.epochs):
         # Train step
@@ -87,7 +100,19 @@ def train(model, device, train_loader, valid_loader, opt, loss_fn, run_name, arg
         for batch in train_loader:
             opt.zero_grad()
             if hasattr(model, 'learner'):
-                raise NotImplementedError("NeuraNIL training not implemented yet.")
+                # Split the batch into support and query sets for meta-learning
+                support_ratio = args.meta.support_ratio
+                (support_x, support_y, _, support_lengths), \
+                (query_x, query_y, _, query_lengths) = utils.support_query_split(batch, support_ratio)
+                support_x, support_y = support_x.to(device), support_y.to(device)
+                query_x, query_y = query_x.to(device), query_y.to(device)
+
+                # Forward pass
+                query_pred = model(support_x, support_y, query_x, support_lengths, query_lengths)
+                batch_loss = loss_fn(query_pred, query_y)
+                batch_loss.backward()
+                opt.step()
+                epoch_loss += batch_loss.item()
             else:
                 data, labels, day_labels, lengths = batch
                 data, labels, day_labels = data.to(device), labels.to(device), day_labels.to(device)
@@ -96,17 +121,16 @@ def train(model, device, train_loader, valid_loader, opt, loss_fn, run_name, arg
                 batch_loss.backward()
                 opt.step()
                 epoch_loss += batch_loss.item()
-                
-        epoch_loss /= len(train_loader)
-        train_losses.append(epoch_loss)
+                support_ratio = 0  # Not used in standard training
 
         # Training accuracy
-        model.eval()
-        train_loss, train_accuracy = evaluate_model(model, train_loader, device, loss_fn, stats_prefix="Train")
+        # model.eval() # NOTE: Interferes with the meta-learning inner loop update
+        train_loss, train_accuracy = evaluate_model(args, model, train_loader, device, stats_prefix="Train")
+        train_losses.append(train_loss)
         train_accuracies.append(train_accuracy)
 
         # Validation step
-        valid_loss, valid_accuracy = evaluate_model(model, valid_loader, device, loss_fn, stats_prefix="Validation")
+        valid_loss, valid_accuracy = evaluate_model(args, model, valid_loader, device, stats_prefix="Validation")
         valid_losses.append(valid_loss)
         valid_accuracies.append(valid_accuracy)
 

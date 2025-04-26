@@ -96,3 +96,33 @@ def plot_lda(X_lda, y, run_name="", if_test=False):
         plt.savefig(save_path)
     else:
         plt.show()
+
+
+
+def support_query_split(batch, support_ratio=0.5):
+    """
+    Randomly split the dataset into support and query sets.
+    """
+    # Read the data from batch
+    data, labels, day_labels, lengths = batch
+
+    n_samples = len(data)
+    indices = np.arange(n_samples)
+
+    # Shuffle the indices for support and query
+    np.random.shuffle(indices)
+    support_size = int(n_samples * support_ratio)
+    support_indices = indices[:support_size]
+    query_indices = indices[support_size:]
+
+    # Extract support and query data
+    support_data = data[support_indices]
+    support_labels = labels[support_indices]
+    support_day_labels = day_labels[support_indices]
+    support_lengths = lengths[support_indices] if lengths is not None else None
+    query_data = data[query_indices]
+    query_labels = labels[query_indices]
+    query_day_labels = day_labels[query_indices]
+    query_lengths = lengths[query_indices] if lengths is not None else None
+    return (support_data, support_labels, support_day_labels, support_lengths), \
+           (query_data, query_labels, query_day_labels, query_lengths)

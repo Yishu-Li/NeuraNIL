@@ -86,6 +86,5 @@ The major "stakeholders" in this problem are the people who lost their ability t
 Python=3.12  
 PyTorch=2.6.0+cu126  
 simple-parsing=0.1.7  
-wandb=0.19.9  
-tqdm=4.67.1  
+scikit-learn=1.6.1
 matplotlib=3.10.1  

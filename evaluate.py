@@ -1,6 +1,7 @@
 import torch
+import torch.nn as nn
 import numpy as np
-from utils import compute_confusion_matrix, plot_lda
+import utils
 
 import models
 
@@ -12,7 +13,7 @@ def plot_confusion_matrix(y_true, y_pred, accuracy, run_name=""):
     import os
 
     num_classes = max(y_true.max(), y_pred.max()) + 1
-    cm = compute_confusion_matrix(y_true, y_pred, num_classes=num_classes)
+    cm = utils.compute_confusion_matrix(y_true, y_pred, num_classes=num_classes)
     cm = cm.T
     # Normalize by true label count (per column)
     true_label_counts = cm.sum(axis=0, keepdims=True)
@@ -38,7 +39,7 @@ def plot_confusion_matrix(y_true, y_pred, accuracy, run_name=""):
     plt.savefig(f'results/{run_name}/confusion_matrix.png')
     plt.close()
 
-def evaluate_model(model, data_loader, device, loss_fn, stats_prefix="", run_name=""):
+def evaluate_model(args, model, data_loader, device, stats_prefix="", run_name=""):
     """
     Evaluate the model on the given data loader.
     """
@@ -70,46 +71,65 @@ def evaluate_model(model, data_loader, device, loss_fn, stats_prefix="", run_nam
             # Plot the LDA
             if isinstance(model, models.LDA):
                 X_lda = model.transform(all_data)
-                plot_lda(X_lda.numpy(), all_labels.numpy(), run_name=run_name, if_test=True)
+                utils.plot_lda(X_lda.numpy(), all_labels.numpy(), run_name=run_name, if_test=True)
         return None, accuracy
 
     
     all_labels = []
     all_preds = []
-    with torch.no_grad():
-        total_loss = 0
-        correct = 0
-        total_samples = 0
-        
-        for batch in data_loader:
-            if hasattr(model, 'learner'):
-                # TODO: Implement the evaluation behavior for NeuraNIL
-                raise NotImplementedError("NeuraNIL evaluation not implemented yet.")
-            else:
-                data, labels, day_labels, lengths = batch
-                data, labels, day_labels = data.to(device), labels.to(device), day_labels.to(device)
-                
-                # Forward pass
-                y_pred = model(data, lengths)
-                
-                # Calculate loss
-                batch_loss = loss_fn(y_pred, labels)
-                total_loss += batch_loss.item()
-                
-                # Calculate accuracy
-                _, predicted = torch.max(y_pred, dim=1)
-                correct += (predicted == labels).sum().item()
-                total_samples += labels.size(0)
-                
-                # Collect for confusion matrix
-                all_labels.append(labels.cpu().numpy())
-                all_preds.append(predicted.cpu().numpy())
-        avg_loss = total_loss / len(data_loader)
-        accuracy = correct / total_samples
+    loss_fn = nn.CrossEntropyLoss() 
+    # with torch.no_grad(): # NOTE: This interferes with the meta-learning inner loop update
+    total_loss = 0
+    correct = 0
+    total_samples = 0
+    
+    for batch in data_loader:
+        if hasattr(model, 'learner'):
+            # Split the batch into support and query sets for meta-learning
+            support_ratio = args.meta.support_ratio
+            (support_x, support_y, _, support_lengths), \
+            (query_x, query_y, _, query_lengths) = utils.support_query_split(batch, support_ratio)
+            support_x, support_y = support_x.to(device), support_y.to(device)
+            query_x, query_y = query_x.to(device), query_y.to(device)
 
-        # Plot confusion matrix for test set
-        if stats_prefix == "Test":
-            y_true = np.concatenate(all_labels)
-            y_pred = np.concatenate(all_preds)
-            plot_confusion_matrix(y_true, y_pred, accuracy, run_name=run_name)
-        return avg_loss, accuracy
+            # Forward pass
+            query_pred = model(support_x, support_y, query_x, support_lengths, query_lengths)
+            batch_loss = loss_fn(query_pred, query_y)
+            total_loss += batch_loss.item()
+
+            # Calculate accuracy
+            _, predicted = torch.max(query_pred, dim=1)
+            correct += (predicted == query_y).sum().item()
+            total_samples += query_y.size(0)
+
+            # Collect for confusion matrix
+            all_labels.append(query_y.cpu().numpy())
+            all_preds.append(predicted.cpu().numpy())
+        else:
+            data, labels, day_labels, lengths = batch
+            data, labels, day_labels = data.to(device), labels.to(device), day_labels.to(device)
+            
+            # Forward pass
+            y_pred = model(data, lengths)
+            
+            # Calculate loss
+            batch_loss = loss_fn(y_pred, labels)
+            total_loss += batch_loss.item()
+            
+            # Calculate accuracy
+            _, predicted = torch.max(y_pred, dim=1)
+            correct += (predicted == labels).sum().item()
+            total_samples += labels.size(0)
+            
+            # Collect for confusion matrix
+            all_labels.append(labels.cpu().numpy())
+            all_preds.append(predicted.cpu().numpy())
+    avg_loss = total_loss / total_samples
+    accuracy = correct / total_samples
+
+    # Plot confusion matrix for test set
+    if stats_prefix == "Test":
+        y_true = np.concatenate(all_labels)
+        y_pred = np.concatenate(all_preds)
+        plot_confusion_matrix(y_true, y_pred, accuracy, run_name=run_name)
+    return avg_loss, accuracy
