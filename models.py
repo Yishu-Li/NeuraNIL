@@ -140,24 +140,23 @@ class LSTM(nn.Module):
 @dataclasses.dataclass
 class TransformerArgs:
     d_model: int = 512
-    num_layer: int = 6
+    num_layers: int = 6
     nheads: int = 8
     dropout: float = 0.1
 
 
 # Positional encoding class implemented in utils.py
-class transformer(nn.Module):
-    def __init__(self, input_size, d_model, output_size, num_layer, nheads, dropout):
-        super(transformer, self).__init__()
+class Transformer(nn.Module):
+    def __init__(self, input_size, d_model, output_size, num_layers, nheads, dropout):
+        super(Transformer, self).__init__()
         self.input_size = input_size
         self.output_size = output_size
         self.d_model = d_model
-        self.num_layer = num_layer
+        self.num_layers = num_layers
         self.nheads = nheads
         self.dropout = dropout
 
         # Transformer block
-        # HACK: 20250409, Do we need the transformer decoder here? Haven't finished.
         self.norm = nn.BatchNorm1d(input_size, affine=False)
         from utils import PositionalEncoding
         self.positional_encoding = PositionalEncoding(d_model, dropout=dropout)
@@ -170,14 +169,33 @@ class transformer(nn.Module):
                 batch_first=True,
                 norm_first=True,
             ),
-            num_layers=num_layer,
+            num_layers=num_layers,
         )
         self.decoder = nn.Linear(d_model, output_size)
         self.mask = None
 
-    # def forward(self, x, lengths):
-    #     self.mask = 
+    def forward(self, x, lengths):
+        batch_size, seq_len, input_size = x.shape
+        assert input_size == self.input_size, f"Input size {input_size} does not match model input size {self.input_size}"
 
+        # Apply normalization
+        # Input to norm1d is (batch_size, input_size, seq_len)
+        x = x.view(-1, self.input_size)
+        x = self.norm(x)
+        # Change back to (batch_size, seq_len, input_size)
+        x = x.view(batch_size, seq_len, self.input_size)
+
+        # Apply positional encoding
+        x = self.positional_encoding(x)
+
+        # Transformer encoder + decoder
+        x = self.encoder(x)
+        x = self.decoder(x)
+
+        # Want output shape to be (batch_size, output_size) but currently it's (batch_size, seq_len, output_size)
+        # Take the mean over the sequence length
+        x = torch.mean(x, dim=1)
+        return x
 
 
 @dataclasses.dataclass

@@ -44,7 +44,7 @@ def setup_model(args, input_size, output_size):
             input_size=input_size,
             output_size=output_size,
             num_layers=args.transformer.num_layers,
-            num_heads=args.transformer.num_heads,
+            nheads=args.transformer.nheads,
             d_model=args.transformer.d_model,
             dropout=args.transformer.dropout,
         )
