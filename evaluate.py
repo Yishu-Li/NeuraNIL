@@ -101,7 +101,7 @@ def evaluate_model(args, model, data_loader, device, stats_prefix="", run_name="
             # Calculate accuracy
             _, predicted = torch.max(query_pred, dim=1)
             correct += (predicted == query_y).sum().item()
-            total_samples += query_y.size(0)
+            total_samples += query_y.shape[0]
 
             # Collect for confusion matrix
             all_labels.append(query_y.cpu().numpy())
@@ -120,7 +120,7 @@ def evaluate_model(args, model, data_loader, device, stats_prefix="", run_name="
             # Calculate accuracy
             _, predicted = torch.max(y_pred, dim=1)
             correct += (predicted == labels).sum().item()
-            total_samples += labels.size(0)
+            total_samples += labels.shape[0]
             
             # Collect for confusion matrix
             all_labels.append(labels.cpu().numpy())

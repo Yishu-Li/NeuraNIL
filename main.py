@@ -144,13 +144,12 @@ def main():
     elif 'FALCON' in args.dataset.data:
         data_tag = "FALCON"
 
+    print(f'Model: {args.options.model}')
     if args.options.model == "NeuraNIL":
         model_details = f'{args.meta.learner}_{args.meta.classifier}_{args.meta.hidden_size}dims'
         # model_details += f'_{args.meta.n_shots}shots_{args.meta.n_queries}queries'
     else:
         model_details = ''
-
-        model_details += f'_{args.options.model}'
     if args.dataset.labels_exclude:
         model_details += f'_labels_exclude_{"_".join(args.dataset.labels_exclude)}'
     if args.dataset.days_exclude:
@@ -166,10 +165,6 @@ def main():
 
 
     # ---------------------------- Setup datasets ------------------------------
-    train_dataset = []
-    valid_dataset = []
-    test_dataset = []
-
     # Initialize the dataset
     data, labels, day_labels = dataset.load_data_with_daylabels(args.dataset.data)
 
@@ -203,8 +198,10 @@ def main():
 
     elif args.dataset.split_method == "day":
         # Split the dataset by day
-        train_days = args.dataset.train_days
-        test_days = args.dataset.test_days
+        train_days = parse_exclude_list(args.dataset.train_days)
+        test_days = parse_exclude_list(args.dataset.test_days)
+        print(f"Train days: {train_days}")
+        print(f"Test days: {test_days}")
 
         from utils import split_by_day
         train_set, test_set = split_by_day(
@@ -243,9 +240,12 @@ def main():
     # valid_loader = torch.utils.data.DataLoader(val_set, batch_size=32, shuffle=False, collate_fn=collate_fn_lstm)
     # test_loader = torch.utils.data.DataLoader(test_set, batch_size=32, shuffle=False, collate_fn=collate_fn_lstm)
     if args.dataset.split_method == "day":
+        val_day_labels = [neural_dataset.day_labels[idx] for idx in val_set.indices]
+        test_dat_labels = [neural_dataset.day_labels[idx] for idx in test_set.indices]
+
         train_loader = torch.utils.data.DataLoader(train_set, batch_size=32, shuffle=True, collate_fn=collate_fn_lstm)
-        valid_loader = torch.utils.data.DataLoader(val_set, batch_sampler=utils.DaySampler(test_days), collate_fn=collate_fn_lstm)
-        test_loader = torch.utils.data.DataLoader(test_set, batch_sampler=utils.DaySampler(test_days), collate_fn=collate_fn_lstm)
+        valid_loader = torch.utils.data.DataLoader(val_set, batch_sampler=utils.DaySampler(val_day_labels), collate_fn=collate_fn_lstm)
+        test_loader = torch.utils.data.DataLoader(test_set, batch_sampler=utils.DaySampler(test_dat_labels), collate_fn=collate_fn_lstm)
     elif args.dataset.split_method == "random":
         train_loader = torch.utils.data.DataLoader(train_set, batch_size=32, shuffle=True, collate_fn=collate_fn_lstm)
         valid_loader = torch.utils.data.DataLoader(val_set, batch_size=32, shuffle=False, collate_fn=collate_fn_lstm)

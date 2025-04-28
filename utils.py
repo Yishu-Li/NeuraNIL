@@ -172,10 +172,12 @@ class DaySampler(torch.utils.data.Sampler):
         self.label_to_indices = defaultdict(list)
 
         for idx, day in enumerate(days_labels):
-            self.label_to_indices[day].append(idx)
+            self.label_to_indices[int(day)].append(int(idx))
 
-        for day, indices, in self.label_to_indices.items():
-            self.batches.append(indices)
+        for day in self.label_to_indices.keys():
+            self.batches.append(self.label_to_indices[day])
+
+        print(f"DaySampler: {len(self.batches)} batches created.")
     
     def __iter__(self):
         return iter(self.batches)

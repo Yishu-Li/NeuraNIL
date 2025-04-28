@@ -139,6 +139,7 @@ def train(model, device, train_loader, valid_loader, run_name, args):
         print(f"\rEpoch {epoch+1}/{args.options.epochs} | Train Loss: {train_loss:.4f} Acc: {train_accuracy:.2f} | Val Loss: {valid_loss:.4f} Acc: {valid_accuracy:.2f}", end="", flush=True)
 
     # Plot training and validation loss and accuracy
+    print()
     plot_training_curves(
         train_losses, valid_losses, train_accuracies, valid_accuracies, args.options.epochs, run_name=run_name
     )
