@@ -112,6 +112,8 @@ def train(model, device, train_loader, valid_loader, run_name, args):
                 query_x, query_y = query_x.to(device), query_y.to(device)
 
                 # Forward pass
+                if query_x.shape[0] < 3 or support_x.shape[0] < 3:
+                    continue
                 query_pred = model(support_x, support_y, query_x, support_lengths, query_lengths)
                 batch_loss = loss_fn(query_pred, query_y)
                 batch_loss.backward()
@@ -119,6 +121,10 @@ def train(model, device, train_loader, valid_loader, run_name, args):
                 epoch_loss += batch_loss.item()
             else:
                 data, labels, day_labels, lengths = batch
+                if isinstance(data, tuple):
+                    data = torch.stack(data, dim=0)
+                if data.shape[0] < 3:
+                    continue
                 data, labels, day_labels = data.to(device), labels.to(device), day_labels.to(device)
                 y_pred = model(data, lengths)
                 batch_loss = loss_fn(y_pred, labels)
@@ -144,8 +150,12 @@ def train(model, device, train_loader, valid_loader, run_name, args):
         # Display training process
         print(f"\rEpoch {epoch+1}/{args.options.epochs} | Train Loss: {train_loss:.4f} Acc: {train_accuracy:.2f} | Val Loss: {valid_loss:.4f} Acc: {valid_accuracy:.2f}", end="", flush=True)
 
-    # Plot training and validation loss and accuracy
+    # After the loop, calculate and print the highest accuracy and lowest loss
     print()
+    print(f"Highest Validation Accuracy: {max(valid_accuracies):.2f}")
+    print(f"Lowest Validation Loss: {min(valid_losses):.4f}")
+
+    # Plot training and validation loss and accuracy
     plot_training_curves(
         train_losses, valid_losses, train_accuracies, valid_accuracies, args.options.epochs, run_name=run_name
     )

@@ -30,6 +30,7 @@ class MLP(nn.Module):
         if norm:
             mlp.append(nn.BatchNorm1d(input_size, affine=False, track_running_stats=False)) # Normalization is very important!!!
         for h in hiddens:
+            print(f"MLP hidden layer: {prev_hidden} -> {h}")
             mlp.append(nn.Linear(prev_hidden, h))
             mlp.append(nn.ReLU())
             mlp.append(nn.Dropout(dropout))

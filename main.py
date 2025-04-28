@@ -61,7 +61,7 @@ def setup_model(args, input_size, output_size):
         args.options.model = args.meta.learner
         learner = setup_model(args, input_size, args.meta.hidden_size)
         args.options.model = args.meta.classifier
-        args.mlp.norm = False
+        # args.mlp.norm = False
         classifier = setup_model(args, args.meta.hidden_size, output_size)
 
         # Setup the NeuraNIL model
@@ -219,6 +219,11 @@ def main():
 
 
     # ---------------------------- Setup model -------------------------------
+    # Check if mlp.hiddens is given
+    if isinstance(args.mlp.hiddens[0], str):
+        args.mlp.hiddens = parse_exclude_list(args.mlp.hiddens)
+        print(f"MLP hidden layers: {args.mlp.hiddens}")
+
     model = setup_model(args, n_features, n_classes)
 
     # Read the model if the path is given

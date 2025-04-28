@@ -85,12 +85,29 @@ def plot_lda(X_lda, y, run_name="", if_test=False):
     """
     Plot the LDA transformed data.
     """
-    plt.figure(figsize=(8, 6))
-    scatter = plt.scatter(X_lda[:, 0], X_lda[:, 1], c=y, cmap='viridis', edgecolor='k', s=50)
+    plt.figure(figsize=(6, 6))
+    
+    # Get unique class labels
+    unique_labels = np.unique(y)
+    
+    # Plot each class with a different color
+    for label in unique_labels:
+        mask = y == label
+        plt.scatter(
+            X_lda[mask, 0], 
+            X_lda[mask, 1], 
+            label=f'Class {label}',
+            edgecolor='k', 
+            s=50
+        )
+    
     plt.title('LDA Projection')
     plt.xlabel('LDA Component 1')
     plt.ylabel('LDA Component 2')
-    plt.colorbar(scatter, label='Class Label')
+    plt.legend()
+    
+    # Turn off axis display
+    plt.axis('off')
     
     if if_test:
         save_path = f'results/{run_name}/lda_projection_test.png'

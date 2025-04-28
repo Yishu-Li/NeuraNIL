@@ -42,8 +42,17 @@ class NeuraNIL(nn.Module):
             support_loss.backward()
             self.inner_opt.step()
 
+    def reinitialize_classifier(self):
+        for name, param in self.classifier.named_parameters():
+            if 'weight' in name:
+                nn.init.xavier_uniform_(param.data)  # 使用 Xavier 初始化权重
+            elif 'bias' in name:
+                nn.init.zeros_(param.data)  # 将偏置初始化为 0
+
 
     def forward(self, support_x, support_y, query_x, support_lengths=None, query_lengths=None):
+        # Re initialize the classifier's parameters to the original weights
+        # self.reinitialize_classifier()
         # Forward pass the support set and update the classifier for k steps
         self.train_inner(support_x, support_y, support_lengths)
         # Forward pass the query set

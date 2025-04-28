@@ -93,6 +93,9 @@ def evaluate_model(args, model, data_loader, device, stats_prefix="", run_name="
             support_x, support_y = support_x.to(device), support_y.to(device)
             query_x, query_y = query_x.to(device), query_y.to(device)
 
+            if query_x.shape[0] < 3 or support_x.shape[0] < 3:
+                continue
+
             # Forward pass
             query_pred = model(support_x, support_y, query_x, support_lengths, query_lengths)
             batch_loss = loss_fn(query_pred, query_y)
@@ -108,6 +111,10 @@ def evaluate_model(args, model, data_loader, device, stats_prefix="", run_name="
             all_preds.append(predicted.cpu().numpy())
         else:
             data, labels, day_labels, lengths = batch
+            if isinstance(data, tuple):
+                data = torch.stack(data, dim=0)
+            if data.shape[0] < 3:
+                continue
             data, labels, day_labels = data.to(device), labels.to(device), day_labels.to(device)
             
             # Forward pass
