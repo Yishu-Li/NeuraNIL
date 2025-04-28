@@ -31,6 +31,7 @@ def plot_training_curves(train_losses, valid_losses, train_accuracies, valid_acc
     plt.tight_layout()
     save_path = f'results/{run_name}/training_curves.png'
     os.makedirs(os.path.dirname(f'results/{run_name}/'), exist_ok=True)
+    print(f"Saving training curves to {save_path}")
     plt.savefig(save_path)
 
 

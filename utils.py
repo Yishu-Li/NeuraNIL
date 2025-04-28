@@ -3,7 +3,9 @@ import torch
 import torch.nn as nn
 from torch.nn.utils.rnn import pad_sequence
 import numpy as np
+from torch.utils.data import TensorDataset, Subset
 import matplotlib.pyplot as plt
+from collections import defaultdict
 
 
 class PositionalEncoding(nn.Module):
@@ -28,8 +30,12 @@ class PositionalEncoding(nn.Module):
 # To load the padded lstm signals
 def collate_fn_lstm(batch):
     # batch: list of (sample, label, day_label, length)
-    samples, labels, day_labels, lengths = zip(*batch)
-    samples = pad_sequence(samples, batch_first=True, padding_value=0)
+    if len(batch[0]) == 4: 
+        samples, labels, day_labels, lengths = zip(*batch)
+        samples = pad_sequence(samples, batch_first=True, padding_value=0)
+    elif len(batch[0]) == 3:
+        samples, labels, day_labels = zip(*batch)
+        lengths = [None] * len(samples)  # No lengths provided
     if lengths[0] is not None:
         lengths = torch.tensor(lengths, dtype=torch.long)
     else:
@@ -105,6 +111,7 @@ def support_query_split(batch, support_ratio=0.5):
     """
     # Read the data from batch
     data, labels, day_labels, lengths = batch
+    data = torch.stack(data)
 
     n_samples = len(data)
     indices = np.arange(n_samples)
@@ -126,3 +133,52 @@ def support_query_split(batch, support_ratio=0.5):
     query_lengths = lengths[query_indices] if lengths is not None else None
     return (support_data, support_labels, support_day_labels, support_lengths), \
            (query_data, query_labels, query_day_labels, query_lengths)
+
+
+
+def split_by_day(dataset, train_days, test_days):
+    '''
+    Split the dataset into train and test sets based on the days.
+    We can train on all days and refit the meta-classifier on the test days.
+    '''
+
+    day_labels = dataset.day_labels.numpy()
+    train_indices = [i for i, day in enumerate(day_labels) if day in train_days]
+    test_indices = [i for i, day in enumerate(day_labels) if day in test_days]
+
+    # Create TensorDataset from the original dataset
+    full_dataset = TensorDataset(dataset.data, dataset.labels, dataset.day_labels)
+    if dataset.lengths is not None:
+        # If lengths exist, add as a fourth tensor
+        full_dataset = TensorDataset(dataset.data, dataset.labels, dataset.day_labels, dataset.lengths)
+
+    train_set = Subset(full_dataset, train_indices)
+    test_set = Subset(full_dataset, test_indices)
+
+    # Print the labels and days in each subset
+    from dataset import print_labels_and_days
+    print_labels_and_days(train_set, "Train")
+    print_labels_and_days(test_set, "Test")
+    return train_set, test_set
+
+
+class DaySampler(torch.utils.data.Sampler):
+    '''
+    A sampler that samples data using day labels.
+    '''
+    def __init__(self, days_labels):
+        self.days_labels = days_labels
+        self.batches = []
+        self.label_to_indices = defaultdict(list)
+
+        for idx, day in enumerate(days_labels):
+            self.label_to_indices[day].append(idx)
+
+        for day, indices, in self.label_to_indices.items():
+            self.batches.append(indices)
+    
+    def __iter__(self):
+        return iter(self.batches)
+    
+    def __len__(self):
+        return len(self.batches)

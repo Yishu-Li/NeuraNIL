@@ -11,6 +11,7 @@ from NeuraNIL import NeuraNIL
 import dataset
 from evaluate import evaluate_model
 from utils import collate_fn_lstm, parse_exclude_list
+import utils
 
 
 
@@ -38,6 +39,7 @@ def setup_model(args, input_size, output_size):
             hiddens=args.mlp.hiddens,
             activation=args.mlp.activation,
             dropout=args.mlp.dropout,
+            norm=args.mlp.norm,
         )
     elif args.options.model == "Transformer":
         model = models.Transformer(
@@ -55,10 +57,11 @@ def setup_model(args, input_size, output_size):
     elif args.options.model == "GNB":
         model = models.GNB()
     elif args.options.model == "NeuraNIL":
-        # Setup the learner and classifier
+        # Setup the learner and classifierrandom
         args.options.model = args.meta.learner
         learner = setup_model(args, input_size, args.meta.hidden_size)
         args.options.model = args.meta.classifier
+        args.mlp.norm = False
         classifier = setup_model(args, args.meta.hidden_size, output_size)
 
         # Setup the NeuraNIL model
@@ -85,7 +88,9 @@ def main():
     class NeuralDatasetArgs:
         data: str = "BG"
         split_ratio: float = 0.8
-        random_split: bool = False
+        split_method: str = "random"  # Options: 'random', 'day'
+        train_days: list = dataclasses.field(default_factory=lambda: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+        test_days: list = dataclasses.field(default_factory=lambda: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
         labels_exclude: list = dataclasses.field(default_factory=list)
         days_exclude: list = dataclasses.field(default_factory=list)
 
@@ -145,8 +150,7 @@ def main():
     else:
         model_details = ''
 
-    if args.dataset.random_split:
-        model_details += f'_random_split_{args.dataset.split_ratio}'
+        model_details += f'_{args.options.model}'
     if args.dataset.labels_exclude:
         model_details += f'_labels_exclude_{"_".join(args.dataset.labels_exclude)}'
     if args.dataset.days_exclude:
@@ -181,7 +185,7 @@ def main():
     )
 
     # Split the dataset into train, valid, and test sets
-    if args.dataset.random_split:
+    if args.dataset.split_method == "random":
         # Randomly split the dataset
         total_size = len(neural_dataset)
         train_size = int(total_size * args.dataset.split_ratio)
@@ -196,6 +200,19 @@ def main():
         print_labels_and_days(train_set, "Train")
         print_labels_and_days(val_set, "Validation")
         print_labels_and_days(test_set, "Test")
+
+    elif args.dataset.split_method == "day":
+        # Split the dataset by day
+        train_days = args.dataset.train_days
+        test_days = args.dataset.test_days
+
+        from utils import split_by_day
+        train_set, test_set = split_by_day(
+            neural_dataset,
+            train_days=train_days,
+            test_days=test_days,
+            )
+        val_set = test_set  
 
 
     # Read the dataset infos
@@ -222,9 +239,17 @@ def main():
 
     # ---------------------------- Setup dataloader -----------------------------
     # HACK: Probably have to change if we want to include the day labels in meta-learning process
-    train_loader = torch.utils.data.DataLoader(train_set, batch_size=32, shuffle=True, collate_fn=collate_fn_lstm)
-    valid_loader = torch.utils.data.DataLoader(val_set, batch_size=32, shuffle=False, collate_fn=collate_fn_lstm)
-    test_loader = torch.utils.data.DataLoader(test_set, batch_size=32, shuffle=False, collate_fn=collate_fn_lstm)
+    # train_loader = torch.utils.data.DataLoader(train_set, batch_size=32, shuffle=True, collate_fn=collate_fn_lstm)
+    # valid_loader = torch.utils.data.DataLoader(val_set, batch_size=32, shuffle=False, collate_fn=collate_fn_lstm)
+    # test_loader = torch.utils.data.DataLoader(test_set, batch_size=32, shuffle=False, collate_fn=collate_fn_lstm)
+    if args.dataset.split_method == "day":
+        train_loader = torch.utils.data.DataLoader(train_set, batch_size=32, shuffle=True, collate_fn=collate_fn_lstm)
+        valid_loader = torch.utils.data.DataLoader(val_set, batch_sampler=utils.DaySampler(test_days), collate_fn=collate_fn_lstm)
+        test_loader = torch.utils.data.DataLoader(test_set, batch_sampler=utils.DaySampler(test_days), collate_fn=collate_fn_lstm)
+    elif args.dataset.split_method == "random":
+        train_loader = torch.utils.data.DataLoader(train_set, batch_size=32, shuffle=True, collate_fn=collate_fn_lstm)
+        valid_loader = torch.utils.data.DataLoader(val_set, batch_size=32, shuffle=False, collate_fn=collate_fn_lstm)
+        test_loader = torch.utils.data.DataLoader(test_set, batch_size=32, shuffle=False, collate_fn=collate_fn_lstm)
     print(f"Train set size: {len(train_loader.dataset)}")
     print(f"Validation set size: {len(valid_loader.dataset)}")
     print(f"Test set size: {len(test_loader.dataset)}")

@@ -131,6 +131,15 @@ class NeuralDataset(torch.utils.data.Dataset):
         label_mapping = {label: i for i, label in enumerate(set(self.labels.tolist()))}
         self.labels = torch.tensor([label_mapping[label.item()] for label in self.labels], dtype=torch.long)
 
+        # Convert everything to tensors
+        self.data = torch.tensor(self.data)
+        self.labels = torch.tensor(self.labels, dtype=torch.long)
+        self.day_labels = torch.tensor(self.day_labels, dtype=torch.long)
+        if self.lengths is not None:
+            self.lengths = torch.tensor(self.lengths, dtype=torch.long)
+        else:
+            self.lengths = None
+
         self.num_samples = len(self.data)
         self.num_classes = len(set(label for label in self.labels.tolist()))
         self.num_days = len(set(day for day in self.day_labels.tolist()))
@@ -150,11 +159,11 @@ class NeuralDataset(torch.utils.data.Dataset):
         return self.num_samples
     
     def __getitem__(self, idx):
-        sample = self.data[idx, :, :] if self.lengths is None else self.data[idx]
+        samples = self.data[idx, :, :] if self.lengths is None else self.data[idx]
         label = self.labels[idx]
         day_label = self.day_labels[idx]
         length = None if self.lengths is None else self.lengths[idx].item()
-        return sample, label, day_label, length
+        return samples, label, day_label, length
 
 
 

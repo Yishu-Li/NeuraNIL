@@ -8,10 +8,12 @@ class MLPArgs:
     hiddens: list = dataclasses.field(default_factory=lambda: [20, 10])
     activation: str = 'relu'
     dropout: float = 0.2
+    norm: bool = True
 
 class MLP(nn.Module):
-    def __init__(self, input_size, output_size, hiddens=None, activation=None, dropout=0.2):
+    def __init__(self, input_size, output_size, hiddens=None, activation=None, norm=False, dropout=0.2):
         super(MLP, self).__init__()
+        self.norm = norm
         
         if activation == 'tanh':
             self.activation = nn.Tanh()
@@ -25,7 +27,8 @@ class MLP(nn.Module):
         # Build the MLP model
         mlp = []
         prev_hidden = input_size
-        mlp.append(nn.BatchNorm1d(input_size, affine=False, track_running_stats=False)) # Normalization is very important!!!
+        if norm:
+            mlp.append(nn.BatchNorm1d(input_size, affine=False, track_running_stats=False)) # Normalization is very important!!!
         for h in hiddens:
             mlp.append(nn.Linear(prev_hidden, h))
             mlp.append(nn.ReLU())

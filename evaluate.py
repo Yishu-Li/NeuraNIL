@@ -37,6 +37,7 @@ def plot_confusion_matrix(y_true, y_pred, accuracy, run_name=""):
     plt.tight_layout()
     os.makedirs(os.path.dirname(f'results/{run_name}/'), exist_ok=True)
     plt.savefig(f'results/{run_name}/confusion_matrix.png')
+    print(f"Confusion matrix saved to results/{run_name}/confusion_matrix.png")
     plt.close()
 
 def evaluate_model(args, model, data_loader, device, stats_prefix="", run_name=""):
