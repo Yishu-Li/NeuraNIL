@@ -271,7 +271,11 @@ def main():
 
     # --------------------------------- Testing ----------------------------------
     if len(test_loader.dataset) > 0:
-        # model.eval() # NOTE: Interferes with the meta-learning inner loop update
+        if hasattr(model, 'learner'):
+            # Set the learner to eval mode for meta-learning
+            model.learner.eval()
+        else:
+            model.eval()
         test_loss,  test_acc = evaluate_model(
             args=args,
             model=model,

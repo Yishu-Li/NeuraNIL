@@ -71,7 +71,6 @@ def main():
         features = []
         minsz = np.shape(inputFeatures[0])[0]  # Make sure all input features are the same size
         for x in inputFeatures:
-            # print(np.shape(x)[0])
             if np.shape(x)[0] < minsz:
                 minsz = np.shape(x)[0]
         for i in range(len(cues)):

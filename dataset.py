@@ -115,7 +115,6 @@ class NeuralDataset(torch.utils.data.Dataset):
         # NOTE: Do not do the one-hot encoding for labels, PyTorch's CE loss does it for you!!!!!
 
         # Exclude labels and day_labels if specified
-        print(labels_exclude, days_exclude)
         if labels_exclude:
             mask = torch.tensor([int(label.item()) not in labels_exclude for label in self.labels])
             self.data = self.data[mask, :, :]

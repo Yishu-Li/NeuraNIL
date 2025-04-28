@@ -67,8 +67,11 @@ def train(model, device, train_loader, valid_loader, run_name, args):
             print("GNB model fitted on the training data.")
 
         # Calculate the training loss and accuracy
-        model.eval()
-        train_loss, train_accuracies = evaluate_model(model, train_loader, device, loss_fn, stats_prefix="Train", run_name=run_name)
+        if hasattr(model, 'learner'):
+            model.learner.eval()
+        else:
+            model.eval()
+        train_loss, train_accuracies = evaluate_model(args, model, train_loader, device, stats_prefix="Train", run_name=run_name)
         print(f"Training Accuracy: {train_accuracies:.2f}")
         return
 
@@ -125,7 +128,10 @@ def train(model, device, train_loader, valid_loader, run_name, args):
                 support_ratio = 0  # Not used in standard training
 
         # Training accuracy
-        # model.eval() # NOTE: Interferes with the meta-learning inner loop update
+        if hasattr(model, 'learner'):
+            model.learner.eval() # Only set the learner to eval mode for meta-learning
+        else:
+            model.eval()
         train_loss, train_accuracy = evaluate_model(args, model, train_loader, device, stats_prefix="Train")
         train_losses.append(train_loss)
         train_accuracies.append(train_accuracy)
