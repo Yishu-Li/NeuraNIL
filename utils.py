@@ -128,7 +128,8 @@ def support_query_split(batch, support_ratio=0.5):
     """
     # Read the data from batch
     data, labels, day_labels, lengths = batch
-    data = torch.stack(data)
+    if not isinstance(data, torch.Tensor):
+        data = torch.stack(data)
 
     n_samples = len(data)
     indices = np.arange(n_samples)
