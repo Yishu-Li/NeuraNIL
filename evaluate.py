@@ -33,6 +33,7 @@ def plot_confusion_matrix(y_true, y_pred, accuracy, run_name=""):
         for j in range(num_classes):
             plt.text(j, i, f"{cm_norm[i, j]:.2f}",
                      ha="center", va="center",
+                     fontsize=8,  # Set smaller font size
                      color="white" if cm_norm[i, j] > thresh else "black")
     plt.tight_layout()
     os.makedirs(os.path.dirname(f'results/{run_name}/'), exist_ok=True)

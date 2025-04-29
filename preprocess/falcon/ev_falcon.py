@@ -9,7 +9,8 @@
 
 import sys, os
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(THIS_DIR, "../../.."))
+PROJECT_ROOT = os.path.abspath(os.path.join(THIS_DIR, "../.."))
+print(f"Project root: {PROJECT_ROOT}")
 sys.path.insert(0, PROJECT_ROOT)
 os.chdir(PROJECT_ROOT)
 from falcon_preprocess import main as preprocess_h2
@@ -30,7 +31,7 @@ def build_args(model_name):
         "--lstm.dropout","0.2",
         "--bidirectional","False",
         "--hiddens","[50,20]",
-        "--mlp.activation","leaky_relu",
+        "--mlp.activation","relu",
         "--mlp.dropout","0.2",
         "--d_model","128",
         "--num_layers","4",

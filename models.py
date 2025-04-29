@@ -55,7 +55,7 @@ class LSTMArgs:
     bidirectional: bool = False
     norm: bool = False
     activation: str = 'tanh'
-    pad: bool = True
+    pad: bool = False
     ifconv: bool = False
     convoutput: int = 1
 
@@ -155,7 +155,8 @@ class Transformer(nn.Module):
         super(Transformer, self).__init__()
         self.input_size = input_size
         self.output_size = output_size
-        self.d_model = d_model
+        self.d_model = input_size
+        d_model = input_size
         self.num_layers = num_layers
         self.nheads = nheads
         self.dropout = dropout

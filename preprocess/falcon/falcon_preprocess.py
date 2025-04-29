@@ -1,54 +1,73 @@
 
-"""
-Split continuous FALCON H2 data into trials, pad properly,
-save clean Data/FALCON/H2/data.npz with X=(30, <trial_len>, features), y=(30,)
-"""
-
-import torch
+import os
 import numpy as np
+import scipy.io
 from pathlib import Path
 
-PT_PATH = Path(__file__).parent / "000950.pt"
-OUT_DIR = Path(__file__).parent.parent.parent / "Data" / "FALCON" / "H2"
+
+SESSIONS = ["t5.2019.05.08","t5.2019.11.25","t5.2019.12.09","t5.2019.12.11","t5.2019.12.18","t5.2019.12.20","t5.2020.01.06","t5.2020.01.08","t5.2020.01.13","t5.2020.01.15"]
+MAPPING = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+
+ROOT = Path(__file__).parent.parent.parent
+RAW  = ROOT / "Data" / "FALCON"
+OUT  = ROOT / "Data" / "FALCON"
+
+def load_cube(matfile, key):
+    return scipy.io.loadmat(str(matfile), squeeze_me=True)[key]
+
+def preprocess_session(sess, day):
+    inf = RAW / sess
+    outf = OUT / sess
+    outf.mkdir(parents=True, exist_ok=True)
+
+    ### concatenate fils into 1 dataset
+    # cube = load_cube(inf/"singleLetters.mat", "neuralActivityCube")
+    # labels = load_cube(inf/"singleLetters.mat", "characterCues")
+    # if (inf/"sentences.mat").exists():
+    #     cube2 = load_cube(inf/"sentences.mat", "neuralActivityCube")
+    #     lab2  = load_cube(inf/"sentences.mat", "intendedText")
+    #     cube  = np.concatenate([cube, cube2], axis=0)
+    #     labels = np.concatenate([labels, lab2], axis=0)
+    all_cubes = []
+    all_labels = []
+    all_day_labels = []
+    for i, letter in enumerate(MAPPING):
+        key = f"neuralActivityCube_{letter}"
+        cube = load_cube(inf/f"singleLetters.mat", key)
+        labels = np.full(cube.shape[0], i)
+        day_labels = np.full(cube.shape[0], day)
+
+        all_cubes.append(cube)
+        all_labels.append(labels)
+        all_day_labels.append(day_labels)
+
+    cube = np.concatenate(all_cubes, axis=0)
+    labels = np.concatenate(all_labels, axis=0)
+    day_labels = np.concatenate(all_day_labels, axis=0)
+    print(f"[{sess}] → cube shape: {cube.shape}, labels shape: {labels.shape}, day_labels shape: {day_labels.shape}")
+  
+    # z-score the data
+    num_trials, num_bins, num_channels = cube.shape
+    cube = cube.reshape(-1, num_channels)
+    if cube.shape[1] == 0:
+        raise ValueError("The neural activity cube is empty.")
+    cube = cube - np.mean(cube, axis=0)
+    cube = cube / np.std(cube, axis=0)
+    cube = cube.reshape(num_trials, num_bins, num_channels)
+
+    X = cube.astype(np.float32)         ###keeps up with shape
+    y = labels.astype(np.int32)
+    day_labels = day_labels.astype(np.int32) 
+    np.savez(outf/"data.npz", X=X, y=y, day_labels=day_labels)
+    print(f"[{sess}] → {X.shape[0]} trials, saved to {outf}")
 
 def main():
-    data = torch.load(PT_PATH)
-    neural = data["neural"]              
-    trial_change = data["trial_change"]   
-    behav = data["behav"]               
+    print("ROOT:", ROOT)
+    print("RAW:", RAW)
+    print("OUT:", OUT)
+    for day, s in enumerate(SESSIONS):
+        preprocess_session(s, day)
+    print(" All sessions have been preprocessed into the Data/FALCON/*/data.npz")
 
-    neural = neural.numpy()
-    trial_change = trial_change.numpy().astype(bool)
-
-  
-    start_idxs = np.flatnonzero(trial_change)
-    end_idxs = np.concatenate([start_idxs[1:], [neural.shape[0]]])
-
-   
-    X_trials = []
-    for start, end in zip(start_idxs, end_idxs):
-        trial = neural[start:end]
-        X_trials.append(trial)
-
-   
-    max_len = max(trial.shape[0] for trial in X_trials)
-    n_trials = len(X_trials)
-    n_features = neural.shape[1]
-
-    X_fixed = np.zeros((n_trials, max_len, n_features), dtype=np.float32)
-    for i, trial in enumerate(X_trials):
-        length = trial.shape[0]
-        X_fixed[i, :length, :] = trial
-
-    # Prepare labels
-    y = np.array([int(np.asarray(label).flatten()[0]) for label in behav], dtype=int)
-
-    # Save
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
-    np.savez(OUT_DIR / "data.npz", X=X_fixed, y=y)
-
-    print(f"Done, saved 2 {OUT_DIR/'data.npz'}")
-    print(f"  X shape: {X_fixed.shape}, y shape: {y.shape}")
-
-if __name__ == "__main__":
+if __name__=="__main__":
     main()

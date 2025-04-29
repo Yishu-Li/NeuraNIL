@@ -155,7 +155,7 @@ def main():
     if args.dataset.days_exclude:
         model_details += f'_days_exclude_{"_".join(args.dataset.days_exclude)}'
 
-    wandb_name = f"{data_tag}_{args.options.model}_{model_details}"
+    wandb_name = f"{data_tag}_{args.options.model}{model_details}"
 
     # wandb.init(
     #     entity='CSCI-1470',
