@@ -13,17 +13,16 @@ for day in {1..9}; do
     echo "Training on days: $train_str"
     echo "Testing on days: $test_str"
     python main.py \
-        --dataset.data="BG" \
+        --dataset.data="FALCON" \
         --dataset.split_method="day" \
         --lstm.pad=False \
         --lstm.norm=True \
         --lstm.ifconv=True \
         --lstm.num_layer=1 \
         --model='NeuraNIL' \
-        --meta.learner='LSTM' \
-        --lstm.activation='relu' \
+        --meta.learner='MLP' \
         --meta.classifier='MLP' \
-        --meta.k=5 \
+        --meta.k=10 \
         --mlp.hiddens='[32]' \
         --dataset.train_days="$train_str" \
         --dataset.test_days="$test_str"

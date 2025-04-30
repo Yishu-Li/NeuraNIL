@@ -13,8 +13,8 @@ PROJECT_ROOT = os.path.abspath(os.path.join(THIS_DIR, "../.."))
 print(f"Project root: {PROJECT_ROOT}")
 sys.path.insert(0, PROJECT_ROOT)
 os.chdir(PROJECT_ROOT)
-from falcon_preprocess import main as preprocess_h2
-preprocess_h2()
+# from falcon_preprocess import main as preprocess_h2
+# preprocess_h2()
 import main as main_mod
 
 
@@ -26,12 +26,17 @@ def build_args(model_name):
         "--model",model_name,
         "--epochs","30",
         "--lr","0.001",
-        "--num_layer","2",
+        "--num_layer","1",
         "--lstm.hidden_size","32",
+        "--lstm.ifconv","True",
+        "--lstm.convoutput","3",
+        "--lstm.num_layer","1",
+        "--lstm.norm","True",
+        "--lstm.activation","relu",
         "--lstm.dropout","0.2",
         "--bidirectional","False",
         "--hiddens","[50,20]",
-        "--mlp.activation","relu",
+        "--mlp.activation","softmax",
         "--mlp.dropout","0.2",
         "--d_model","128",
         "--num_layers","4",
@@ -43,7 +48,7 @@ def build_args(model_name):
     
 if __name__=="__main__":
     build_args("MLP");    main_mod.main()
-    build_args("LSTM");   main_mod.main()
-    build_args("Transformer"); main_mod.main()
-    build_args("LDA");    main_mod.main()
-    build_args("GNB");    main_mod.main()
+    # build_args("LSTM");   main_mod.main()
+    # build_args("Transformer"); main_mod.main()
+    # build_args("LDA");    main_mod.main()
+    # build_args("GNB");    main_mod.main()

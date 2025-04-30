@@ -82,7 +82,7 @@ def setup_model(args, input_size, output_size):
 
 
 
-def main():
+def main(model=None, keep_training=False):
     # ---------------------------- Setup arguments -----------------------------
     @dataclasses.dataclass
     class NeuralDatasetArgs:
@@ -102,11 +102,12 @@ def main():
         seed: int = 42
         model_path: str = None
         lr: float = 0.001
+        batch_size: int = 32
 
     @dataclasses.dataclass
     class MetaArgs:
-        support_ratio: float = 0.5
-        hidden_size: int = 8
+        n_support: int = 5
+        hidden_size: int = 32
         learner: str = "LSTM"
         classifier: str = "MLP"
         k: int = 5
@@ -224,44 +225,45 @@ def main():
         args.mlp.hiddens = parse_exclude_list(args.mlp.hiddens)
         print(f"MLP hidden layers: {args.mlp.hiddens}")
 
-    model = setup_model(args, n_features, n_classes)
+    if model is None:
+        model = setup_model(args, n_features, n_classes)
 
-    # Read the model if the path is given
-    if args.options.model_path:
-        model.load_state_dict(torch.load(args.options.model_path))
-        print(f"Model loaded from {args.options.model_path}")
-        skip_training = True
+        # Read the model if the path is given
+        if args.options.model_path:
+            model.load_state_dict(torch.load(args.options.model_path))
+            print(f"Model loaded from {args.options.model_path}")
+            skip_training = True
+        else:
+            skip_training = False
+
+        # Move the model to the device
+        model.to(device)
+        print(f"Model: {model}")
+        print(f"Model parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
+    
     else:
-        skip_training = False
-
-    # Move the model to the device
-    model.to(device)
-    print(f"Model: {model}")
-    print(f"Model parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
+        print(f"Using the existing model: {model}")
+        skip_training = True
 
     # ---------------------------- Setup dataloader -----------------------------
-    # HACK: Probably have to change if we want to include the day labels in meta-learning process
-    # train_loader = torch.utils.data.DataLoader(train_set, batch_size=32, shuffle=True, collate_fn=collate_fn_lstm)
-    # valid_loader = torch.utils.data.DataLoader(val_set, batch_size=32, shuffle=False, collate_fn=collate_fn_lstm)
-    # test_loader = torch.utils.data.DataLoader(test_set, batch_size=32, shuffle=False, collate_fn=collate_fn_lstm)
     if args.dataset.split_method == "day":
         val_day_labels = [neural_dataset.day_labels[idx] for idx in val_set.indices]
         test_dat_labels = [neural_dataset.day_labels[idx] for idx in test_set.indices]
 
-        train_loader = torch.utils.data.DataLoader(train_set, batch_size=32, shuffle=True, collate_fn=collate_fn_lstm)
+        train_loader = torch.utils.data.DataLoader(train_set, batch_size=args.options.batch_size, shuffle=True, collate_fn=collate_fn_lstm)
         valid_loader = torch.utils.data.DataLoader(val_set, batch_sampler=utils.DaySampler(val_day_labels), collate_fn=collate_fn_lstm)
         test_loader = torch.utils.data.DataLoader(test_set, batch_sampler=utils.DaySampler(test_dat_labels), collate_fn=collate_fn_lstm)
     elif args.dataset.split_method == "random":
-        train_loader = torch.utils.data.DataLoader(train_set, batch_size=32, shuffle=True, collate_fn=collate_fn_lstm)
-        valid_loader = torch.utils.data.DataLoader(val_set, batch_size=32, shuffle=False, collate_fn=collate_fn_lstm)
-        test_loader = torch.utils.data.DataLoader(test_set, batch_size=32, shuffle=False, collate_fn=collate_fn_lstm)
+        train_loader = torch.utils.data.DataLoader(train_set, batch_size=args.options.batch_size, shuffle=True, collate_fn=collate_fn_lstm)
+        valid_loader = torch.utils.data.DataLoader(val_set, batch_size=args.options.batch_size, shuffle=False, collate_fn=collate_fn_lstm)
+        test_loader = torch.utils.data.DataLoader(test_set, batch_size=args.options.batch_size, shuffle=False, collate_fn=collate_fn_lstm)
     print(f"Train set size: {len(train_loader.dataset)}")
     print(f"Validation set size: {len(valid_loader.dataset)}")
     print(f"Test set size: {len(test_loader.dataset)}")
 
 
     # --------------------------------- Training ----------------------------------
-    if not skip_training:
+    if (not skip_training) or (keep_training):
         from train import train
         # Train the model
         train(
@@ -292,6 +294,8 @@ def main():
 
         print(f'\n{"*"*35} Test Results {"*"*35}')
         print(f'Test Loss: {test_loss} | Test Accuracy: {test_acc}')
+
+    return model, test_loss, test_acc
 
 
 

@@ -122,7 +122,7 @@ def plot_lda(X_lda, y, run_name="", if_test=False):
 
 
 
-def support_query_split(batch, support_ratio=0.5):
+def support_query_split(batch, n_support=2):
     """
     Randomly split the dataset into support and query sets.
     """
@@ -136,9 +136,30 @@ def support_query_split(batch, support_ratio=0.5):
 
     # Shuffle the indices for support and query
     np.random.shuffle(indices)
-    support_size = int(n_samples * support_ratio)
-    support_indices = indices[:support_size]
-    query_indices = indices[support_size:]
+    support_indices = []
+    query_indices = []
+    
+    # Get unique class labels
+    unique_labels = torch.unique(labels)
+
+    # Rase an error if there are not enough samples for each class
+    if len(unique_labels) * n_support > n_samples:
+        raise ValueError(f"Not enough samples for each class. {len(unique_labels)} * {n_support} > {n_samples}")
+    
+    for label in unique_labels:
+        # Get indices of all samples belonging to the current class
+        class_indices = indices[labels == label]
+        
+        # Shuffle the class indices
+        np.random.shuffle(class_indices)
+        
+        # Split into support and query
+        support_indices.extend(class_indices[:n_support])
+        query_indices.extend(class_indices[n_support:])
+    
+    # Convert to numpy arrays
+    support_indices = np.array(support_indices)
+    query_indices = np.array(query_indices)
 
     # Extract support and query data
     support_data = data[support_indices]

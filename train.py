@@ -11,7 +11,7 @@ def plot_training_curves(train_losses, valid_losses, train_accuracies, valid_acc
     """
     Plot training and validation loss and accuracy curves.
     """
-    plt.figure(figsize=(12, 6))
+    plt.figure(figsize=(8, 3))
     plt.subplot(1, 2, 1)
     plt.plot(range(1, epochs + 1), train_losses, label='Training Loss')
     plt.plot(range(1, epochs + 1), valid_losses, label='Validation Loss')
@@ -105,9 +105,9 @@ def train(model, device, train_loader, valid_loader, run_name, args):
             opt.zero_grad()
             if hasattr(model, 'learner'):
                 # Split the batch into support and query sets for meta-learning
-                support_ratio = args.meta.support_ratio
+                n_support = args.meta.n_support
                 (support_x, support_y, _, support_lengths), \
-                (query_x, query_y, _, query_lengths) = utils.support_query_split(batch, support_ratio)
+                (query_x, query_y, _, query_lengths) = utils.support_query_split(batch, n_support)
                 support_x, support_y = support_x.to(device), support_y.to(device)
                 query_x, query_y = query_x.to(device), query_y.to(device)
 
@@ -131,7 +131,7 @@ def train(model, device, train_loader, valid_loader, run_name, args):
                 batch_loss.backward()
                 opt.step()
                 epoch_loss += batch_loss.item()
-                support_ratio = 0  # Not used in standard training
+                n_support = 0  # Not used in standard training
 
         # Training accuracy
         if hasattr(model, 'learner'):

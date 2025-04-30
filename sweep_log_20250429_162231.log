@@ -1,0 +1,87 @@
+2025-04-29 16:22:31,730 - meta_day_sweep - INFO - Starting parameter sweep with 81 combinations
+2025-04-29 16:22:31,730 - meta_day_sweep - INFO - Running combination 1/81
+2025-04-29 16:22:31,730 - meta_day_sweep - INFO - Running: python train.py --learning_rate 0.001 --batch_size 16 --hidden_dim 64 --seed 42 --epochs 50 --output_dir ./sweep_results/lr0.001_bs16_hd64_seed42 --gpu 0
+2025-04-29 16:22:32,792 - meta_day_sweep - INFO - Command completed in 1.06 seconds
+2025-04-29 16:22:32,792 - meta_day_sweep - INFO - Running combination 2/81
+2025-04-29 16:22:32,792 - meta_day_sweep - INFO - Running: python train.py --learning_rate 0.001 --batch_size 16 --hidden_dim 64 --seed 43 --epochs 50 --output_dir ./sweep_results/lr0.001_bs16_hd64_seed43 --gpu 0
+2025-04-29 16:22:33,830 - meta_day_sweep - INFO - Command completed in 1.04 seconds
+2025-04-29 16:22:33,830 - meta_day_sweep - INFO - Running combination 3/81
+2025-04-29 16:22:33,830 - meta_day_sweep - INFO - Running: python train.py --learning_rate 0.001 --batch_size 16 --hidden_dim 64 --seed 44 --epochs 50 --output_dir ./sweep_results/lr0.001_bs16_hd64_seed44 --gpu 0
+2025-04-29 16:22:34,806 - meta_day_sweep - INFO - Command completed in 0.98 seconds
+2025-04-29 16:22:34,806 - meta_day_sweep - INFO - Running combination 4/81
+2025-04-29 16:22:34,806 - meta_day_sweep - INFO - Running: python train.py --learning_rate 0.001 --batch_size 16 --hidden_dim 128 --seed 42 --epochs 50 --output_dir ./sweep_results/lr0.001_bs16_hd128_seed42 --gpu 0
+2025-04-29 16:22:35,785 - meta_day_sweep - INFO - Command completed in 0.98 seconds
+2025-04-29 16:22:35,785 - meta_day_sweep - INFO - Running combination 5/81
+2025-04-29 16:22:35,786 - meta_day_sweep - INFO - Running: python train.py --learning_rate 0.001 --batch_size 16 --hidden_dim 128 --seed 43 --epochs 50 --output_dir ./sweep_results/lr0.001_bs16_hd128_seed43 --gpu 0
+2025-04-29 16:22:36,836 - meta_day_sweep - INFO - Command completed in 1.05 seconds
+2025-04-29 16:22:36,837 - meta_day_sweep - INFO - Running combination 6/81
+2025-04-29 16:22:36,837 - meta_day_sweep - INFO - Running: python train.py --learning_rate 0.001 --batch_size 16 --hidden_dim 128 --seed 44 --epochs 50 --output_dir ./sweep_results/lr0.001_bs16_hd128_seed44 --gpu 0
+2025-04-29 16:22:37,853 - meta_day_sweep - INFO - Command completed in 1.02 seconds
+2025-04-29 16:22:37,854 - meta_day_sweep - INFO - Running combination 7/81
+2025-04-29 16:22:37,856 - meta_day_sweep - INFO - Running: python train.py --learning_rate 0.001 --batch_size 16 --hidden_dim 256 --seed 42 --epochs 50 --output_dir ./sweep_results/lr0.001_bs16_hd256_seed42 --gpu 0
+2025-04-29 16:22:38,880 - meta_day_sweep - INFO - Command completed in 1.02 seconds
+2025-04-29 16:22:38,881 - meta_day_sweep - INFO - Running combination 8/81
+2025-04-29 16:22:38,881 - meta_day_sweep - INFO - Running: python train.py --learning_rate 0.001 --batch_size 16 --hidden_dim 256 --seed 43 --epochs 50 --output_dir ./sweep_results/lr0.001_bs16_hd256_seed43 --gpu 0
+2025-04-29 16:22:39,865 - meta_day_sweep - INFO - Command completed in 0.98 seconds
+2025-04-29 16:22:39,865 - meta_day_sweep - INFO - Running combination 9/81
+2025-04-29 16:22:39,866 - meta_day_sweep - INFO - Running: python train.py --learning_rate 0.001 --batch_size 16 --hidden_dim 256 --seed 44 --epochs 50 --output_dir ./sweep_results/lr0.001_bs16_hd256_seed44 --gpu 0
+2025-04-29 16:22:40,922 - meta_day_sweep - INFO - Command completed in 1.06 seconds
+2025-04-29 16:22:40,922 - meta_day_sweep - INFO - Running combination 10/81
+2025-04-29 16:22:40,922 - meta_day_sweep - INFO - Running: python train.py --learning_rate 0.001 --batch_size 32 --hidden_dim 64 --seed 42 --epochs 50 --output_dir ./sweep_results/lr0.001_bs32_hd64_seed42 --gpu 0
+2025-04-29 16:22:41,940 - meta_day_sweep - INFO - Command completed in 1.02 seconds
+2025-04-29 16:22:41,940 - meta_day_sweep - INFO - Running combination 11/81
+2025-04-29 16:22:41,940 - meta_day_sweep - INFO - Running: python train.py --learning_rate 0.001 --batch_size 32 --hidden_dim 64 --seed 43 --epochs 50 --output_dir ./sweep_results/lr0.001_bs32_hd64_seed43 --gpu 0
+2025-04-29 16:22:42,983 - meta_day_sweep - INFO - Command completed in 1.04 seconds
+2025-04-29 16:22:42,983 - meta_day_sweep - INFO - Running combination 12/81
+2025-04-29 16:22:42,983 - meta_day_sweep - INFO - Running: python train.py --learning_rate 0.001 --batch_size 32 --hidden_dim 64 --seed 44 --epochs 50 --output_dir ./sweep_results/lr0.001_bs32_hd64_seed44 --gpu 0
+2025-04-29 16:22:44,000 - meta_day_sweep - INFO - Command completed in 1.02 seconds
+2025-04-29 16:22:44,000 - meta_day_sweep - INFO - Running combination 13/81
+2025-04-29 16:22:44,000 - meta_day_sweep - INFO - Running: python train.py --learning_rate 0.001 --batch_size 32 --hidden_dim 128 --seed 42 --epochs 50 --output_dir ./sweep_results/lr0.001_bs32_hd128_seed42 --gpu 0
+2025-04-29 16:22:45,060 - meta_day_sweep - INFO - Command completed in 1.06 seconds
+2025-04-29 16:22:45,060 - meta_day_sweep - INFO - Running combination 14/81
+2025-04-29 16:22:45,060 - meta_day_sweep - INFO - Running: python train.py --learning_rate 0.001 --batch_size 32 --hidden_dim 128 --seed 43 --epochs 50 --output_dir ./sweep_results/lr0.001_bs32_hd128_seed43 --gpu 0
+2025-04-29 16:22:46,037 - meta_day_sweep - INFO - Command completed in 0.98 seconds
+2025-04-29 16:22:46,037 - meta_day_sweep - INFO - Running combination 15/81
+2025-04-29 16:22:46,038 - meta_day_sweep - INFO - Running: python train.py --learning_rate 0.001 --batch_size 32 --hidden_dim 128 --seed 44 --epochs 50 --output_dir ./sweep_results/lr0.001_bs32_hd128_seed44 --gpu 0
+2025-04-29 16:22:47,098 - meta_day_sweep - INFO - Command completed in 1.06 seconds
+2025-04-29 16:22:47,098 - meta_day_sweep - INFO - Running combination 16/81
+2025-04-29 16:22:47,098 - meta_day_sweep - INFO - Running: python train.py --learning_rate 0.001 --batch_size 32 --hidden_dim 256 --seed 42 --epochs 50 --output_dir ./sweep_results/lr0.001_bs32_hd256_seed42 --gpu 0
+2025-04-29 16:22:48,085 - meta_day_sweep - INFO - Command completed in 0.99 seconds
+2025-04-29 16:22:48,085 - meta_day_sweep - INFO - Running combination 17/81
+2025-04-29 16:22:48,086 - meta_day_sweep - INFO - Running: python train.py --learning_rate 0.001 --batch_size 32 --hidden_dim 256 --seed 43 --epochs 50 --output_dir ./sweep_results/lr0.001_bs32_hd256_seed43 --gpu 0
+2025-04-29 16:22:49,178 - meta_day_sweep - INFO - Command completed in 1.09 seconds
+2025-04-29 16:22:49,178 - meta_day_sweep - INFO - Running combination 18/81
+2025-04-29 16:22:49,178 - meta_day_sweep - INFO - Running: python train.py --learning_rate 0.001 --batch_size 32 --hidden_dim 256 --seed 44 --epochs 50 --output_dir ./sweep_results/lr0.001_bs32_hd256_seed44 --gpu 0
+2025-04-29 16:22:50,207 - meta_day_sweep - INFO - Command completed in 1.03 seconds
+2025-04-29 16:22:50,207 - meta_day_sweep - INFO - Running combination 19/81
+2025-04-29 16:22:50,208 - meta_day_sweep - INFO - Running: python train.py --learning_rate 0.001 --batch_size 64 --hidden_dim 64 --seed 42 --epochs 50 --output_dir ./sweep_results/lr0.001_bs64_hd64_seed42 --gpu 0
+2025-04-29 16:22:51,241 - meta_day_sweep - INFO - Command completed in 1.03 seconds
+2025-04-29 16:22:51,241 - meta_day_sweep - INFO - Running combination 20/81
+2025-04-29 16:22:51,241 - meta_day_sweep - INFO - Running: python train.py --learning_rate 0.001 --batch_size 64 --hidden_dim 64 --seed 43 --epochs 50 --output_dir ./sweep_results/lr0.001_bs64_hd64_seed43 --gpu 0
+2025-04-29 16:22:52,267 - meta_day_sweep - INFO - Command completed in 1.03 seconds
+2025-04-29 16:22:52,267 - meta_day_sweep - INFO - Running combination 21/81
+2025-04-29 16:22:52,267 - meta_day_sweep - INFO - Running: python train.py --learning_rate 0.001 --batch_size 64 --hidden_dim 64 --seed 44 --epochs 50 --output_dir ./sweep_results/lr0.001_bs64_hd64_seed44 --gpu 0
+2025-04-29 16:22:53,282 - meta_day_sweep - INFO - Command completed in 1.01 seconds
+2025-04-29 16:22:53,282 - meta_day_sweep - INFO - Running combination 22/81
+2025-04-29 16:22:53,282 - meta_day_sweep - INFO - Running: python train.py --learning_rate 0.001 --batch_size 64 --hidden_dim 128 --seed 42 --epochs 50 --output_dir ./sweep_results/lr0.001_bs64_hd128_seed42 --gpu 0
+2025-04-29 16:22:54,359 - meta_day_sweep - INFO - Command completed in 1.08 seconds
+2025-04-29 16:22:54,359 - meta_day_sweep - INFO - Running combination 23/81
+2025-04-29 16:22:54,359 - meta_day_sweep - INFO - Running: python train.py --learning_rate 0.001 --batch_size 64 --hidden_dim 128 --seed 43 --epochs 50 --output_dir ./sweep_results/lr0.001_bs64_hd128_seed43 --gpu 0
+2025-04-29 16:22:55,402 - meta_day_sweep - INFO - Command completed in 1.04 seconds
+2025-04-29 16:22:55,402 - meta_day_sweep - INFO - Running combination 24/81
+2025-04-29 16:22:55,402 - meta_day_sweep - INFO - Running: python train.py --learning_rate 0.001 --batch_size 64 --hidden_dim 128 --seed 44 --epochs 50 --output_dir ./sweep_results/lr0.001_bs64_hd128_seed44 --gpu 0
+2025-04-29 16:22:56,390 - meta_day_sweep - INFO - Command completed in 0.99 seconds
+2025-04-29 16:22:56,390 - meta_day_sweep - INFO - Running combination 25/81
+2025-04-29 16:22:56,390 - meta_day_sweep - INFO - Running: python train.py --learning_rate 0.001 --batch_size 64 --hidden_dim 256 --seed 42 --epochs 50 --output_dir ./sweep_results/lr0.001_bs64_hd256_seed42 --gpu 0
+2025-04-29 16:22:57,427 - meta_day_sweep - INFO - Command completed in 1.04 seconds
+2025-04-29 16:22:57,427 - meta_day_sweep - INFO - Running combination 26/81
+2025-04-29 16:22:57,427 - meta_day_sweep - INFO - Running: python train.py --learning_rate 0.001 --batch_size 64 --hidden_dim 256 --seed 43 --epochs 50 --output_dir ./sweep_results/lr0.001_bs64_hd256_seed43 --gpu 0
+2025-04-29 16:22:58,467 - meta_day_sweep - INFO - Command completed in 1.04 seconds
+2025-04-29 16:22:58,467 - meta_day_sweep - INFO - Running combination 27/81
+2025-04-29 16:22:58,470 - meta_day_sweep - INFO - Running: python train.py --learning_rate 0.001 --batch_size 64 --hidden_dim 256 --seed 44 --epochs 50 --output_dir ./sweep_results/lr0.001_bs64_hd256_seed44 --gpu 0
+2025-04-29 16:22:59,513 - meta_day_sweep - INFO - Command completed in 1.04 seconds
+2025-04-29 16:22:59,513 - meta_day_sweep - INFO - Running combination 28/81
+2025-04-29 16:22:59,513 - meta_day_sweep - INFO - Running: python train.py --learning_rate 0.0003 --batch_size 16 --hidden_dim 64 --seed 42 --epochs 50 --output_dir ./sweep_results/lr0.0003_bs16_hd64_seed42 --gpu 0
+2025-04-29 16:23:00,522 - meta_day_sweep - INFO - Command completed in 1.01 seconds
+2025-04-29 16:23:00,522 - meta_day_sweep - INFO - Running combination 29/81
+2025-04-29 16:23:00,522 - meta_day_sweep - INFO - Running: python train.py --learning_rate 0.0003 --batch_size 16 --hidden_dim 64 --seed 43 --epochs 50 --output_dir ./sweep_results/lr0.0003_bs16_hd64_seed43 --gpu 0

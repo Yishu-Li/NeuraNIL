@@ -88,9 +88,9 @@ def evaluate_model(args, model, data_loader, device, stats_prefix="", run_name="
     for batch in data_loader:
         if hasattr(model, 'learner'):
             # Split the batch into support and query sets for meta-learning
-            support_ratio = args.meta.support_ratio
+            n_support = args.meta.n_support
             (support_x, support_y, _, support_lengths), \
-            (query_x, query_y, _, query_lengths) = utils.support_query_split(batch, support_ratio)
+            (query_x, query_y, _, query_lengths) = utils.support_query_split(batch, n_support)
             support_x, support_y = support_x.to(device), support_y.to(device)
             query_x, query_y = query_x.to(device), query_y.to(device)
 
