@@ -1,6 +1,10 @@
-# NeuraNIL
+# NeuraNIL: Model Agnostic Meta Learning for Neural Decoding
 
 CSCI1470 Final Project
+
+- **Poster:** `submission/poster.pdf`
+- **Report:** `submission/report.pdf`
+- **Slides:** `submission/slides.pdf`
 
 ## Team members
 
